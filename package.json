@@ -1,0 +1,19 @@
+{
+  "private": true,
+  "scripts": {
+    "dev": "yarn generate && concurrently 'yarn:dev:*'",
+    "generate": "nuxt generate && cp -R .output ./pocketbase",
+    "dev:nuxt": "nuxt dev",
+    "dev:pocketbase": "go run pocketbase/main.go serve",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "build:prod": "nuxt generate && cp -R .output ./pocketbase && go build -o pocketnuxt pocketbase/main.go"
+  },
+  "devDependencies": {
+    "concurrently": "^7.6.0",
+    "nuxt": "3.13.2"
+  },
+  "dependencies": {
+    "pocketbase": "^0.9.1"
+  }
+}

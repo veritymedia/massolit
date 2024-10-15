@@ -1,0 +1,12 @@
+node_modules
+*.log*
+.nuxt
+.nitro
+.cache
+.env
+dist
+.vscode
+pb_data
+.output
+build
+notes
