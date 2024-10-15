@@ -10,10 +10,13 @@
     "build:prod": "nuxt generate && cp -R .output ./pocketbase && go build -o pocketnuxt pocketbase/main.go"
   },
   "devDependencies": {
+    "@nuxtjs/tailwindcss": "^6.12.1",
     "concurrently": "^7.6.0",
     "nuxt": "3.13.2"
   },
   "dependencies": {
-    "pocketbase": "^0.9.1"
+    "pocketbase": "^0.9.1",
+    "shadcn-nuxt": "^0.10.4",
+    "typescript": "^5.6.3"
   }
 }
