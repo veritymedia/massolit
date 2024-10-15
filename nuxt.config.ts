@@ -1,11 +1,15 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  ssr: false, // Must be false to be used served by pocketbase
+  // Must be false to be used served by pocketbase
+  ssr: false,
+
   srcDir: "app",
-  css: [],
+  css: ["./app/assets/css/main.css", "./app/assets/css/shadcn.css"],
+
   build: {
     transpile: ["primevue"],
   },
+
   shadcn: {
     /**
      * Prefix for all the imported component
@@ -15,13 +19,24 @@ export default defineNuxtConfig({
      * Directory that the component lives in.
      * @default "./components/ui"
      */
-    componentDir: "./components/ui",
+    componentDir: "./app/components/ui",
   },
-  modules: ["@nuxtjs/tailwindcss", "shadcn-nuxt"],
+
+  modules: ["shadcn-nuxt"],
+
+  postcss: {
+    plugins: {
+      tailwindcss: {},
+      autoprefixer: {},
+    },
+  },
+
   imports: {
     autoImport: true,
     addons: {
       vueTemplate: true,
     },
   },
+
+  compatibilityDate: "2024-10-15",
 });

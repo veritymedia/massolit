@@ -1,14 +1,8 @@
-<script lang="ts" setup>
-const ready = true
-</script>
+<script lang="ts" setup></script>
 
 <template>
-  
-  <div>
-    <Toast />
-    <Toast position="bottom-right" group="br" />
-    <NuxtLayout v-show="ready">
-      
+  <div class="dark bg-background text-foreground">
+    <NuxtLayout>
       <NuxtLoadingIndicator />
       <NuxtPage />
     </NuxtLayout>
