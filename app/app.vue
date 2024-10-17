@@ -1,7 +1,14 @@
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+const isDark = useDark();
+const toggleDark = useToggle(isDark);
+
+onMounted(() => {
+  toggleDark(true);
+});
+</script>
 
 <template>
-  <div class="dark bg-background text-foreground">
+  <div class="bg-background text-foreground">
     <NuxtLayout>
       <NuxtLoadingIndicator />
       <NuxtPage />

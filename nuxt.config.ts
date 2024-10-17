@@ -4,7 +4,7 @@ export default defineNuxtConfig({
   ssr: false,
 
   srcDir: "app",
-  css: ["./app/assets/css/main.css", "./app/assets/css/shadcn.css"],
+  css: ["./app/assets/css/shadcn.css"],
 
   build: {
     transpile: ["primevue"],
@@ -22,7 +22,7 @@ export default defineNuxtConfig({
     componentDir: "./app/components/ui",
   },
 
-  modules: ["shadcn-nuxt"],
+  modules: ["shadcn-nuxt", "@vueuse/nuxt"],
 
   postcss: {
     plugins: {
