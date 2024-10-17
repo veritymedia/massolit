@@ -1,6 +1,7 @@
 {
   "private": true,
   "scripts": {
+    "typegen": "npx pocketbase-typegen --db ./pb_data/data.db --out pocketbase-types.ts",
     "dev": "pnpm generate && concurrently 'pnpm:dev:*'",
     "generate": "nuxt generate && cp -R .output ./pocketbase",
     "dev:nuxt": "nuxt dev",
@@ -23,6 +24,7 @@
     "@radix-icons/vue": "^1.0.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "dotenv": "^16.4.5",
     "html5-qrcode": "^2.3.8",
     "pocketbase": "^0.9.1",
     "radix-vue": "^1.9.7",
