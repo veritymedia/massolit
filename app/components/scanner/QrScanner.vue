@@ -12,21 +12,29 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref } from "vue";
 import { Html5Qrcode } from "html5-qrcode";
+import { ClientResponseError } from "pocketbase";
 
-const { width, height } = useWindowSize();
+const { width: windowWidth, height } = useWindowSize();
 const scannerContainerSize = computed(() => {
-  return { width: width - 100 };
+  return { width: windowWidth.value - 100 };
 });
 
 const qrScannerBox = ref(null);
-let html5QrCode = null;
-const scanResultText = ref("");
-const startScanner = () => {
-  html5QrCode = new Html5Qrcode("qr-scanner-box");
+let html5QrCode: Html5Qrcode | null = null;
 
+const scanResultText = ref("");
+
+const createScanner = () => {
+  html5QrCode = new Html5Qrcode("qr-scanner-box");
+};
+
+function startScanner() {
+  if (!html5QrCode) {
+    return
+  }
   html5QrCode
     .start(
       { facingMode: "environment" }, // Use back camera
@@ -38,6 +46,7 @@ const startScanner = () => {
       },
       (decodedText, decodedResult) => {
         console.log(`QR Code detected: ${decodedText}`);
+        handleScannedCode(decodedText)
         scanResultText.value = decodedText;
       },
       (errorMessage) => {
@@ -47,7 +56,8 @@ const startScanner = () => {
     .catch((err) => {
       console.error(`Unable to start the QR Code scanner: ${err}`);
     });
-};
+}
+
 
 const stopScanner = () => {
   if (html5QrCode) {
@@ -65,6 +75,7 @@ const stopScanner = () => {
 // Start scanner when component is mounted
 onMounted(() => {
   nextTick(() => {
+    createScanner();
     startScanner();
   });
 });
@@ -74,7 +85,25 @@ onBeforeUnmount(() => {
   stopScanner();
 });
 
-function checkCodeValidity() {
+const pb = usePocketbase()
+
+async function handleScannedCode(qrResultText: string) {
+  stopScanner();
+  try {
+
+    const bookInstanceResult = await pb.collection("book_inventory").getFirstListItem("")
+      // check if book exists in the database by ISBN.
+      // If book does not exist in DB, fetch ISBN data from external api and ask to add it.
+      // if adding book, navigate to book add screen.
+      // if book in DB, then ask to add this code.
+      // run codeAdd function/ call to DB.
+      // once code added, move to studentBook register page
+  } catch (error) {
+    if (error instanceof ClientResponseError && error.status === 404 ){
+     
+    }
+  }
+  
   // check if code exists in database
   // if yes, check if it is withdrawn by someone
   //    if yes return user, navigateTo "rental" page which shows book and user who took it

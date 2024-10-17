@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "dev": "yarn generate && concurrently 'yarn:dev:*'",
+    "dev": "pnpm generate && concurrently 'pnpm:dev:*'",
     "generate": "nuxt generate && cp -R .output ./pocketbase",
     "dev:nuxt": "nuxt dev",
     "dev:pocketbase": "go run pocketbase/main.go serve",
