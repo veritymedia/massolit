@@ -11,11 +11,20 @@ const allStudents = ref();
 async function searchManagebacStudents() {
   try {
     const res = await pb.send("/managebac/students?q=", {});
-    allStudents.value = res.message;
+    allStudents.value = res.students;
     console.log(res);
   } catch (err) {
     console.log(err);
   }
+}
+
+const [isOpen, closeDialog] = useDialogState();
+
+const qrResult = ref();
+function handleQrResult(result: string) {
+  closeDialog();
+  qrResult.value = result;
+  // alert("QR:" + result);
 }
 
 async function checkIfRented(scannedCode: string) {
@@ -41,12 +50,8 @@ onMounted(() => {
 
 <template>
   <div class="h-screen w-screen flex-col p-6 flex gap-10">
-    <!-- <Card class="w-full h-32 xl:w-32 xl:h-full rounded">nav</Card> -->
-    <Button @click="searchManagebacStudents">Search student</Button>
-    <div v-if="allStudents">
-      <p v-for="item in allStudents.students">{{ item }}</p>
-    </div>
-    <Dialog class="max-h-min">
+    QR: {{ qrResult }}
+    <Dialog v-model:open="isOpen" class="max-h-min">
       <DialogTrigger as-child>
         <Button class="w-full">Scan Book Code</Button>
       </DialogTrigger>
@@ -55,10 +60,10 @@ onMounted(() => {
           <DialogTitle>Register Book</DialogTitle>
           <DialogDescription> Scan book QR code. </DialogDescription>
         </DialogHeader>
-        <ScannerQrScanner />
+        <ScannerQrScanner @qrResult="handleQrResult" />
 
         <DialogFooter class="w-full flex items-center">
-          <!-- <Button type="submit"> Next</Button> -->
+          <Button @click="closeDialog"> Next</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
