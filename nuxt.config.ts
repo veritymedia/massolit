@@ -22,7 +22,7 @@ export default defineNuxtConfig({
     componentDir: "./app/components/ui",
   },
 
-  modules: ["shadcn-nuxt", "@vueuse/nuxt"],
+  modules: ["shadcn-nuxt", "@vueuse/nuxt", "@nuxt/icon"],
 
   postcss: {
     plugins: {

@@ -9,5 +9,5 @@ export const useDialogState = () => {
     isOpen.value = true;
   }
 
-  return [isOpen, closeDialog(), openDialog()];
+  return { isOpen, closeDialog, openDialog };
 };
