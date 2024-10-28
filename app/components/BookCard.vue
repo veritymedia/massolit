@@ -5,10 +5,10 @@
     </h2>
 
     <div class="flex text-xs justify-center gap-2 items-start">
-      <p class="bg-accent rounded px-2 py-0.5">
+      <p class="bg-accent rounded-full px-2 py-0.5">
         {{ props.book?.isbn }}
       </p>
-      <p class="bg-primary rounded px-2 py-0.5">
+      <p class="bg-primary rounded-full px-2 py-0.5">
         {{ props.book.id }}
       </p>
     </div>

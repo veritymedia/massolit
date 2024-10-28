@@ -87,13 +87,18 @@ type Renter = {
   middle_name?: string;
 };
 
+type Rental = {
+  managebac_user_id: string;
+  book_instance_id: string;
+};
+
 export type RentedBookStatus = {
   codeExists: boolean;
   bookExists: boolean;
   isRented: boolean;
   book?: RentedBook;
-  renter?: Renter;
   bookId?: string;
+  rental?: Rental;
 };
 
 async function findRental(qrScannedCode: string): Promise<Record | undefined> {
@@ -150,8 +155,12 @@ async function checkBookStatus(
       bookRentedStatusModel.bookExists = true;
       bookRentedStatusModel.codeExists = true;
       bookRentedStatusModel.isRented = true;
-      bookRentedStatusModel.renter = { id: rental.rented_to };
       bookRentedStatusModel.bookId = parsedCode.id;
+      bookRentedStatusModel.rental = {
+        managebac_user_id: rental.rented_to,
+        book_instance_id: rental.book_instance,
+      };
+      console.log(bookRentedStatusModel);
       const book: Record = rental.expand["book_instance"]["expand"]["book"];
 
       bookRentedStatusModel.book = {

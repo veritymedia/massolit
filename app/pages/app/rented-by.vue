@@ -20,7 +20,35 @@
     }"
   />
   <div class="w-full">
-    <Button class="w-full" variant="secondary">Return Book</Button>
+    <Dialog v-model:open="bookReturnModal" class="">
+      <DialogTrigger class="sticky bottom-5" as-child>
+        <Button class="w-full" variant="secondary">Return Book</Button>
+      </DialogTrigger>
+      <DialogContent class="h-full flex flex-col items-center justify-between">
+        <DialogHeader>
+          <DialogTitle>Return book?</DialogTitle>
+        </DialogHeader>
+
+        <div class="w-full flex flex-col items-center gap-4">
+          <h2 class="text-lg font-bold"></h2>
+          <p class="text-center">
+            The book
+            <span class="font-bold">
+              {{ props.rentedBookStatus.book?.title }}
+            </span>
+            will be removed from account of
+            <span class="font-bold">
+              {{ user?.first_name + " " + user?.last_name }} </span
+            >.
+          </p>
+          <Button variant="destructive" @click="handleBookReturn"
+            >Return Book</Button
+          >
+          <Button variant="ghost" @click="closeDialog">Cancel</Button>
+        </div>
+        <DialogFooter class="w-full flex items-center"> </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>
 
@@ -33,6 +61,21 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {});
 
 const pb = usePocketbase();
+
+const { isOpen: bookReturnModal, closeDialog, openDialog } = useDialogState();
+
+async function handleBookReturn() {
+  try {
+    const filter = `(book_instance="${props.rentedBookStatus.rental?.book_instance_id}"&&rented_to="${props.rentedBookStatus.rental?.managebac_user_id}")`;
+    console.log("filter: ", filter);
+
+    const record = await pb.collection("rentals").getFirstListItem(filter);
+
+    console.log(record);
+  } catch (err) {
+    console.log(err);
+  }
+}
 
 type ManagebacStudent = {
   account_uid?: string;
@@ -76,14 +119,14 @@ async function getManagebacUser(managebacID: string) {
 
 onMounted(async () => {
   if (
-    !props.rentedBookStatus.renter?.id ||
+    !props.rentedBookStatus.rental?.managebac_user_id ||
     !props.rentedBookStatus.bookId ||
     !props.rentedBookStatus.book?.isbn
   ) {
     await navigateTo("/app");
   }
-  if (props.rentedBookStatus.renter?.id && user) {
-    await getManagebacUser(props.rentedBookStatus.renter.id);
+  if (props.rentedBookStatus.rental?.managebac_user_id) {
+    await getManagebacUser(props.rentedBookStatus.rental.managebac_user_id);
   }
 });
 </script>
