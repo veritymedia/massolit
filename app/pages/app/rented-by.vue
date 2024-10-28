@@ -53,6 +53,7 @@
 </template>
 
 <script setup lang="ts">
+import type { Record } from "pocketbase";
 import type { RentedBookStatus as BookStatus } from "../app.vue";
 
 interface Props {
@@ -66,14 +67,28 @@ const { isOpen: bookReturnModal, closeDialog, openDialog } = useDialogState();
 
 async function handleBookReturn() {
   try {
+    const rental = await getRentalRecord();
+
+    if (rental === undefined) {
+      return;
+    }
+
+    const recordDeleted = await pb.collection("rentals").delete(rental.id);
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+async function getRentalRecord(): Promise<Record | undefined> {
+  try {
     const filter = `(book_instance="${props.rentedBookStatus.rental?.book_instance_id}"&&rented_to="${props.rentedBookStatus.rental?.managebac_user_id}")`;
-    console.log("filter: ", filter);
 
     const record = await pb.collection("rentals").getFirstListItem(filter);
 
-    console.log(record);
+    return record;
   } catch (err) {
     console.log(err);
+    return undefined;
   }
 }
 
