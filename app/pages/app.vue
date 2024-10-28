@@ -1,12 +1,10 @@
 <script lang="ts" setup>
 import { Record } from "pocketbase";
-// const pb = usePocketbase();
 definePageMeta({
   // middleware: ["not-authed-guard"],
 });
 
 const pb = usePocketbase();
-// const mb = useManagebac();
 
 const allStudents = ref();
 async function searchManagebacStudents() {
@@ -23,6 +21,14 @@ const { isOpen, closeDialog, openDialog } = useDialogState();
 
 const qrResult = ref();
 const isLoading = ref(false);
+const bookStatus = ref<RentedBookStatus>({
+  bookExists: false,
+  codeExists: false,
+  isRented: false,
+});
+
+// This is only for key on child component.
+const scannedBookId = ref("");
 
 type MassolitCode = {
   version: number;
@@ -81,12 +87,13 @@ type Renter = {
   middle_name?: string;
 };
 
-type RentedBookStatus = {
+export type RentedBookStatus = {
   codeExists: boolean;
   bookExists: boolean;
   isRented: boolean;
   book?: RentedBook;
   renter?: Renter;
+  bookId?: string;
 };
 
 async function findRental(qrScannedCode: string): Promise<Record | undefined> {
@@ -130,7 +137,7 @@ async function checkBookStatus(
   parsedCode: MassolitCode,
 ): Promise<RentedBookStatus> {
   // TODO: change the object to a class which dynmically computes the status based on the info present.
-  const bookRentedStatus: RentedBookStatus = {
+  const bookRentedStatusModel: RentedBookStatus = {
     bookExists: false,
     codeExists: false,
     isRented: false,
@@ -140,13 +147,14 @@ async function checkBookStatus(
     const rental = await findRental(parsedCode.id);
 
     if (rental !== undefined && rental.id) {
-      bookRentedStatus.bookExists = true;
-      bookRentedStatus.codeExists = true;
-      bookRentedStatus.isRented = true;
-      bookRentedStatus.renter = { id: rental.rented_to };
+      bookRentedStatusModel.bookExists = true;
+      bookRentedStatusModel.codeExists = true;
+      bookRentedStatusModel.isRented = true;
+      bookRentedStatusModel.renter = { id: rental.rented_to };
+      bookRentedStatusModel.bookId = parsedCode.id;
       const book: Record = rental.expand["book_instance"]["expand"]["book"];
 
-      bookRentedStatus.book = {
+      bookRentedStatusModel.book = {
         title: book.title,
         isbn: book.isbn,
         cover_url: book.cover_url,
@@ -160,13 +168,14 @@ async function checkBookStatus(
 
     if (bookInstance && bookInstance.id) {
       // offer to rent out as it exists.
-      bookRentedStatus.bookExists = true;
-      bookRentedStatus.codeExists = true;
+      bookRentedStatusModel.bookExists = true;
+      bookRentedStatusModel.codeExists = true;
+      bookRentedStatusModel.bookId = parsedCode.id;
 
       // Need to tell ts that this will always be a single record.
       const book: Record = bookInstance.expand["book"];
 
-      bookRentedStatus.book = {
+      bookRentedStatusModel.book = {
         title: book.title,
         isbn: book.isbn,
         cover_url: book.cover_url,
@@ -178,9 +187,9 @@ async function checkBookStatus(
 
     if (book !== undefined) {
       // offer to rent out as it exists.
-      bookRentedStatus.bookExists = true;
+      bookRentedStatusModel.bookExists = true;
 
-      bookRentedStatus.book = {
+      bookRentedStatusModel.book = {
         title: book.title,
         isbn: book.isbn,
         cover_url: book.cover_url,
@@ -194,7 +203,7 @@ async function checkBookStatus(
   } catch (err) {
     console.log(err);
   } finally {
-    return bookRentedStatus;
+    return bookRentedStatusModel;
   }
 }
 
@@ -205,9 +214,30 @@ async function handleQrResult(result: string) {
 
   try {
     const c = parseCode(result);
-    const rentedBookStatus = await checkBookStatus(c);
 
-    console.log("BOOK STATUS: ", rentedBookStatus);
+    const bookStatusModel = await checkBookStatus(c);
+    scannedBookId.value = c.id;
+
+    bookStatus.value = bookStatusModel;
+
+    if (bookStatusModel.isRented) {
+      await navigateTo("/app/rented-by");
+      return;
+    }
+
+    if (bookStatusModel.codeExists) {
+      await navigateTo("/app/rent-out");
+      return;
+    }
+
+    if (bookStatusModel.bookExists) {
+      await navigateTo("/app/add-code");
+      return;
+    }
+
+    await navigateTo("/app/add-book");
+
+    console.log("BOOK STATUS: ", bookStatusModel);
   } catch (error) {
     console.error(error);
   } finally {
@@ -215,23 +245,38 @@ async function handleQrResult(result: string) {
   }
 }
 
+const route = useRoute();
+
 onMounted(() => {
-  handleQrResult("MASSOLIT|1|GPSYCH-3|12312312312");
+  handleQrResult("MASSOLIT|1|GPSYCH-1|12312312312");
 });
 </script>
 
 <template>
-  <div class="h-screen w-screen flex-col p-6 flex gap-10">
+  <div class="h-screen w-screen flex-col justify-between p-6 flex">
     <div
       v-if="isLoading"
       class="w-screen h-screen fixed top-0 left-0 bg-background flex items-center justify-center"
     >
       <Icon name="line-md:loading-loop" class="w-16 h-16" />
     </div>
-    QR: {{ qrResult }}
+    <div>
+      <div class="flex items-center justify-between">
+        <img src="/images/logos/massolit-logo.png" class="w-24" alt="" />
+        <div>{{ pb.authStore.model?.email }}</div>
+      </div>
+      <div class="mt-20">
+        <div v-if="route.name === 'app'">
+          <Card class="flex items-center p-5 justify-center">
+            Scan a book QR code to get started.
+          </Card>
+        </div>
+        <NuxtPage v-else :rentedBookStatus="bookStatus" :key="scannedBookId" />
+      </div>
+    </div>
     <Dialog v-model:open="isOpen" class="max-h-min">
-      <DialogTrigger as-child>
-        <Button class="w-full">Scan Book Code</Button>
+      <DialogTrigger class="sticky bottom-5" as-child>
+        <Button class="w-full">Scan Book</Button>
       </DialogTrigger>
       <DialogContent class="h-full flex flex-col justify-between">
         <DialogHeader>
@@ -241,7 +286,7 @@ onMounted(() => {
         <ScannerQrScanner @qrResult="handleQrResult" />
 
         <DialogFooter class="w-full flex items-center">
-          <Button @click="closeDialog"> Next</Button>
+          <!-- <Button @click="closeDialog"> Next</Button> -->
         </DialogFooter>
       </DialogContent>
     </Dialog>

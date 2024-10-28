@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+h1 {
+  @apply text-2xl font-bold;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -31,7 +35,7 @@
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
-    --radius: 1rem;
+    --radius: 0.25rem;
   }
 
   .dark {

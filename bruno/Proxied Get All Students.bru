@@ -5,7 +5,11 @@ meta {
 }
 
 get {
-  url: http://localhost:8090/managebac/students
+  url: http://localhost:8090/managebac/students?q=peter
   body: none
   auth: none
+}
+
+params:query {
+  q: peter
 }

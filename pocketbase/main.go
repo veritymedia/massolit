@@ -117,14 +117,18 @@ func main() {
 				return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to read response"})
 			}
 
+			var jsonResponse map[string]interface{}
+			if err := json.Unmarshal(body, &jsonResponse); err != nil {
+				// Handle the case where the response is not valid JSON
+				return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Invalid JSON response from server"})
+			}
+
 			// Log the external response for debugging (optional)
 			log.Printf("Response from external API: %s", body)
 
 			// Return the response from the external server
-			return c.JSON(resp.StatusCode, map[string]interface{}{
-				"message": string(body),
-				"status":  resp.Status,
-			})
+			// Return the decoded JSON as a response
+			return c.JSON(resp.StatusCode, jsonResponse)
 		})
 
 		e.Router.GET("/*", apis.StaticDirectoryHandler(echo.MustSubFS(public, ".output/public"), true))
