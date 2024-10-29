@@ -74,6 +74,9 @@ async function handleBookReturn() {
     }
 
     const recordDeleted = await pb.collection("rentals").delete(rental.id);
+    if (recordDeleted) {
+      await navigateTo("/app");
+    }
   } catch (err) {
     console.log(err);
   }

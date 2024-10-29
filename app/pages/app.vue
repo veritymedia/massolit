@@ -78,6 +78,7 @@ type RentedBook = {
   title: string;
   isbn: string;
   cover_url: string;
+  id: string;
 };
 
 type Renter = {
@@ -86,7 +87,11 @@ type Renter = {
   last_name?: string;
   middle_name?: string;
 };
-
+type BookInstance = {
+  id: string;
+  code: string;
+  book_id: string;
+};
 type Rental = {
   managebac_user_id: string;
   book_instance_id: string;
@@ -99,6 +104,7 @@ export type RentedBookStatus = {
   book?: RentedBook;
   bookId?: string;
   rental?: Rental;
+  book_instance?: BookInstance;
 };
 
 async function findRental(qrScannedCode: string): Promise<Record | undefined> {
@@ -161,9 +167,19 @@ async function checkBookStatus(
         book_instance_id: rental.book_instance,
       };
       console.log(bookRentedStatusModel);
+      const bookInstance: Partial<Record & BookInstance> =
+        rental.expand["book_instance"];
+
+      bookRentedStatusModel.book_instance = {
+        book_id: bookInstance.book,
+        code: parsedCode.id,
+        id: bookInstance.id,
+      };
+
       const book: Record = rental.expand["book_instance"]["expand"]["book"];
 
       bookRentedStatusModel.book = {
+        id: book.id,
         title: book.title,
         isbn: book.isbn,
         cover_url: book.cover_url,
@@ -184,7 +200,13 @@ async function checkBookStatus(
       // Need to tell ts that this will always be a single record.
       const book: Record = bookInstance.expand["book"];
 
+      bookRentedStatusModel.book_instance = {
+        book_id: bookInstance.book,
+        code: parsedCode.id,
+        id: bookInstance.id,
+      };
       bookRentedStatusModel.book = {
+        id: book.id,
         title: book.title,
         isbn: book.isbn,
         cover_url: book.cover_url,
@@ -257,7 +279,7 @@ async function handleQrResult(result: string) {
 const route = useRoute();
 
 onMounted(() => {
-  handleQrResult("MASSOLIT|1|GPSYCH-1|12312312312");
+  handleQrResult("MASSOLIT|1|GPSYCH-2|12312312312");
 });
 </script>
 
