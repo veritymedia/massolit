@@ -8,7 +8,7 @@
       <p class="bg-accent rounded-full px-2 py-0.5">
         {{ props.book?.isbn }}
       </p>
-      <p class="bg-primary rounded-full px-2 py-0.5">
+      <p v-if="!props.bookInstanceMissing" class="rounded-full px-2 py-0.5">
         {{ props.book.id }}
       </p>
     </div>
@@ -28,6 +28,7 @@ interface Props {
     title: string;
     cover_url: string;
   };
+  bookInstanceMissing?: boolean;
 }
 
 const props = defineProps<Props>();

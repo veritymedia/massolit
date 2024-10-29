@@ -24,7 +24,7 @@
         </DialogHeader>
 
         <div class="w-full flex flex-col items-center gap-4">
-          <div class="w-full">
+          <div class="w-full relative">
             <div
               class="w-full flex items-center items-evenly border border-muted rounded-lg"
             >
@@ -38,7 +38,7 @@
             </div>
             <Card
               v-if="studentList.length !== 0 && studentSearchTerm.length !== 0"
-              class="mt-2"
+              class="mt-2 absolute top-10 bg-background z-50 w-full overflow-scroll"
             >
               <ul class="flex flex-col">
                 <li
@@ -59,7 +59,7 @@
               {{ props.rentedBookStatus.book?.title }}
             </span>
             with code
-            <span class="font-bold bg-primary px-1 rounded-full">
+            <span class="bg-primary font-bold text-xs px-2 rounded-full">
               {{ props.rentedBookStatus.bookId }}</span
             >
             will be assigned to:

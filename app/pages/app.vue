@@ -153,6 +153,7 @@ async function checkBookStatus(
     codeExists: false,
     isRented: false,
   };
+  bookRentedStatusModel.bookId = parsedCode.id;
 
   try {
     const rental = await findRental(parsedCode.id);
@@ -161,7 +162,6 @@ async function checkBookStatus(
       bookRentedStatusModel.bookExists = true;
       bookRentedStatusModel.codeExists = true;
       bookRentedStatusModel.isRented = true;
-      bookRentedStatusModel.bookId = parsedCode.id;
       bookRentedStatusModel.rental = {
         managebac_user_id: rental.rented_to,
         book_instance_id: rental.book_instance,
@@ -221,10 +221,12 @@ async function checkBookStatus(
       bookRentedStatusModel.bookExists = true;
 
       bookRentedStatusModel.book = {
+        id: book.id,
         title: book.title,
         isbn: book.isbn,
         cover_url: book.cover_url,
       };
+      bookRentedStatusModel.bookId;
       throw "Book found";
     }
 
@@ -279,7 +281,7 @@ async function handleQrResult(result: string) {
 const route = useRoute();
 
 onMounted(() => {
-  handleQrResult("MASSOLIT|1|GPSYCH-2|12312312312");
+  handleQrResult("MASSOLIT|1|GPSYCH-3|12312312312");
 });
 </script>
 
