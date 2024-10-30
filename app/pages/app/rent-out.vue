@@ -113,6 +113,8 @@ function handleStudentSelect(student: any) {
 const studentSearchTerm = ref("");
 
 async function searchManagebacStudents() {
+  console.log("Search term: ", studentSearchTerm.value);
+
   if (studentSearchTerm.value.length < 3) {
     console.log("Search term too short. Must be 3+");
     return;

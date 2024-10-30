@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { Record } from "pocketbase";
 definePageMeta({
-  // middleware: ["not-authed-guard"],
+  middleware: ["not-authed-guard"],
 });
 
 const pb = usePocketbase();
@@ -281,7 +281,7 @@ async function handleQrResult(result: string) {
 const route = useRoute();
 
 onMounted(() => {
-  handleQrResult("MASSOLIT|1|GPSYCH-3|12312312312");
+  // handleQrResult("MASSOLIT|1|GPSYCH-3|12312312312");
 });
 </script>
 
@@ -296,7 +296,7 @@ onMounted(() => {
     <div>
       <div class="flex items-center justify-between">
         <img src="/images/logos/massolit-logo.png" class="w-24" alt="" />
-        <div>{{ pb.authStore.model?.email }}</div>
+        <p class="text-sm">{{ pb.authStore.model?.email }}</p>
       </div>
       <div class="mt-20">
         <div v-if="route.name === 'app'">
@@ -318,9 +318,7 @@ onMounted(() => {
         </DialogHeader>
         <ScannerQrScanner @qrResult="handleQrResult" />
 
-        <DialogFooter class="w-full flex items-center">
-          <!-- <Button @click="closeDialog"> Next</Button> -->
-        </DialogFooter>
+        <DialogFooter class="w-full flex items-center"> </DialogFooter>
       </DialogContent>
     </Dialog>
   </div>

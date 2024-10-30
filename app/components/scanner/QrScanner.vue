@@ -17,6 +17,8 @@ import { onMounted, onBeforeUnmount, ref } from "vue";
 import { Html5Qrcode } from "html5-qrcode";
 import { ClientResponseError } from "pocketbase";
 
+const emit = defineEmits(["qrResult"]);
+
 const { width: windowWidth, height } = useWindowSize();
 const scannerContainerSize = computed(() => {
   return { width: windowWidth.value - 100 };
@@ -41,14 +43,11 @@ function startScanner() {
       {
         fps: 20, // Frames per second
         aspectRatio: 1,
-
-        // qrbox: { width: 200, height: 200 }, // Define scanner box size
       },
       (decodedText, decodedResult) => {
         console.log(`QR Code detected: ${decodedText}`);
-        emit("qrResult", decodedText);
-        // handleScannedCode(decodedText);
         scanResultText.value = decodedText;
+        emit("qrResult", decodedText);
       },
       (errorMessage) => {
         console.log(`QR Code scan error: ${errorMessage}`);
@@ -80,39 +79,9 @@ onMounted(() => {
   });
 });
 
-// Stop scanner when component is destroyed
 onBeforeUnmount(() => {
   stopScanner();
 });
-
-const emit = defineEmits(["qrResult"]);
-
-// async function handleScannedCode(qrResultText: string) {
-//   stopScanner();
-//   try {
-//     const bookInstanceResult = await pb
-//       .collection("book_inventory")
-//       .getFirstListItem("");
-//     // check if book exists in the database by ISBN.
-//     // If book does not exist in DB, fetch ISBN data from external api and ask to add it.
-//     // if adding book, navigate to book add screen.
-//     // if book in DB, then ask to add this code.
-//     // run codeAdd function/ call to DB.
-//     // once code added, move to studentBook register page
-//   } catch (error) {
-//     if (error instanceof ClientResponseError && error.status === 404) {
-//     }
-//   }
-
-// check if code exists in database
-// if yes, check if it is withdrawn by someone
-//    if yes return user, navigateTo "rental" page which shows book and user who took it
-//    if no, navigateTo page to search for managebac user.
-// if no:
-//    ask if should create book in database.
-//        if yes, add book to db, go back to scan screen.
-//        if no, go back to scan screen.
-// }
 </script>
 
 <style scoped>

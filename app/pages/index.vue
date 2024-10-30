@@ -11,20 +11,29 @@ const userModel = ref({
 });
 
 async function login() {
-  let user = await pb
-    .collection("users")
-    .authWithPassword(userModel.value.email, userModel.value.pass);
-  console.log(user);
-  console.log(pb.authStore.model);
+  try {
+    let user = await pb
+      .collection("users")
+      .authWithPassword(userModel.value.email, userModel.value.pass);
+    console.log(user);
+    console.log(pb.authStore.model);
+    await navigateTo("/app");
+  } catch (err) {
+    console.log(err);
+  }
 }
 </script>
 <template>
-  <div class="h-screen w-screen flex items-center justify-center p-10">
+  <div class="h-screen w-screen flex flex-col items-center justify-between p-5">
+    <div class="flex items-center justify-between w-full">
+      <img src="/images/logos/massolit-logo.png" class="w-24" alt="" />
+    </div>
+
     <Card class="">
-      <CardHeader>Access Library</CardHeader>
+      <CardHeader>Login to Massolit</CardHeader>
       <CardContent class="flex flex-col gap-4">
-        <div>
-          <Label for="email">Email</Label>
+        <form>
+          <label for="email">Email</label>
           <Input
             id="email"
             :modelValue="userModel.email"
@@ -32,18 +41,19 @@ async function login() {
             placeholder="someone@email.com"
             type="email"
           />
-        </div>
-        <div>
-          <Label for="password">Password</Label>
+        </form>
+        <form>
+          <label for="password">Password</label>
           <Input
             id="password"
             :modelValue="userModel.pass"
             @update:modelValue="(v: string) => (userModel.pass = v)"
             type="password"
           />
-        </div>
+        </form>
         <Button @click="login">Login</Button>
       </CardContent>
     </Card>
+    <div></div>
   </div>
 </template>

@@ -12,7 +12,11 @@
       }}</span>
       to the database?
     </p>
-    <Button variant="secondary" class="xw-full" @click="handleAddBookInstance()"
+    <Button
+      variant="secondary"
+      class="xw-full"
+      :disabled="isLoading"
+      @click="handleAddBookInstance()"
       >Add to Database</Button
     >
     <BookCard
@@ -38,8 +42,10 @@ const props = withDefaults(defineProps<Props>(), {});
 
 const pb = usePocketbase();
 
+const isLoading = ref(false);
 async function handleAddBookInstance() {
   try {
+    isLoading.value = true;
     if (!props.rentedBookStatus.book || !props.rentedBookStatus.bookId) {
       return;
     }
@@ -50,8 +56,12 @@ async function handleAddBookInstance() {
 
     const res = await pb.collection("book_instances").create(data);
     console.log(res);
+
+    await navigateTo("/app/rent-out");
   } catch (err) {
     console.log(err);
+  } finally {
+    isLoading.value = false;
   }
 }
 </script>
