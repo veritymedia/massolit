@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { Record } from "pocketbase";
 definePageMeta({
-  middleware: ["not-authed-guard"],
+  // middleware: ["not-authed-guard"],
 });
 
 const pb = usePocketbase();
@@ -293,6 +293,7 @@ onMounted(() => {
     >
       <Icon name="line-md:loading-loop" class="w-16 h-16" />
     </div>
+    <AppAlert />
     <div>
       <div class="flex items-center justify-between">
         <img src="/images/logos/massolit-logo.png" class="w-24" alt="" />
