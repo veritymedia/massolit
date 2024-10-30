@@ -15,25 +15,6 @@
 <script setup lang="ts">
 import { useAlert } from "#imports";
 const { createAlert, activeAlert } = useAlert();
-onMounted(() => {
-  setTimeout(() => {
-    createAlert({
-      title: "error",
-      message: "some test",
-      variant: "destructive",
-    });
-    createAlert({
-      title: "Not 2",
-      message: "some text",
-      variant: "default",
-    });
-    createAlert({
-      title: "Not 3",
-      message: "some text",
-      variant: "default",
-    });
-  });
-});
 </script>
 
 <style scoped>
