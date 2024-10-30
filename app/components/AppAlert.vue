@@ -4,7 +4,7 @@
       v-if="activeAlert"
       class="w-full flex justify-center pt-4 left-0 fixed top-0"
     >
-      <Alert class="w-11/12">
+      <Alert class="w-11/12" :variant="activeAlert.variant ?? 'default'">
         <AlertTitle>{{ activeAlert.title }}</AlertTitle>
         <AlertDescription>{{ activeAlert.message }}</AlertDescription>
       </Alert>
@@ -15,6 +15,25 @@
 <script setup lang="ts">
 import { useAlert } from "#imports";
 const { createAlert, activeAlert } = useAlert();
+onMounted(() => {
+  setTimeout(() => {
+    createAlert({
+      title: "error",
+      message: "some test",
+      variant: "destructive",
+    });
+    createAlert({
+      title: "Not 2",
+      message: "some text",
+      variant: "default",
+    });
+    createAlert({
+      title: "Not 3",
+      message: "some text",
+      variant: "default",
+    });
+  });
+});
 </script>
 
 <style scoped>

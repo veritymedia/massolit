@@ -8,14 +8,17 @@ export const useAlert = () => {
     title: string;
     message: string;
     duration?: number;
+    variant?: "destructive" | "default";
   };
 
   watch(activeAlert, (newAlert) => {
     if (newAlert) {
-      const duration = newAlert.duration ?? 4000;
+      const duration = newAlert.duration ?? 5000;
       setTimeout(() => {
         removeAlert();
-        activateNextAlert();
+        setTimeout(() => {
+          activateNextAlert();
+        }, 300); // This duration is the same as transition on component to make it smooth.
       }, duration);
     }
   });
