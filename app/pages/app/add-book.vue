@@ -118,7 +118,12 @@ async function addBookToDatabase() {
       const record = await pb.collection("books").create(data);
       console.log(record);
     }
-  } catch (err) {}
+  } catch (err) {
+    console.log(err);
+    return;
+  } finally {
+    await navigateTo("/app");
+  }
 }
 
 function reduceAuthorsToString(authors: string[]): string {
