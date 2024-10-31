@@ -86,6 +86,10 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  // middleware: [()]
+});
+
 import type { Record } from "pocketbase";
 import type { RentedBookStatus as BookStatus } from "../app.vue";
 
@@ -166,8 +170,9 @@ const pb = usePocketbase();
 const { isOpen: bookRentModal, closeDialog, openDialog } = useDialogState();
 
 onMounted(async () => {
-  openDialog();
-  // await searchManagebacStudents();
-  // closeStudentSelectDialog();
+  if (!props.rentedBookStatus.codeExists) {
+    await navigateTo("/app");
+  }
+  // openDialog();
 });
 </script>

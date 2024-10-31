@@ -2,19 +2,20 @@
   <div class="flex flex-col gap-2 items-center justify-start">
     <Icon
       name="material-symbols:warning-rounded"
-      class="w-12 h-12 text-[yellow]"
+      class="w-12 h-12 text-[yellow] bg-opacity-75"
     />
     <h2 class="text-lg uppercase font-bold">No such code.</h2>
     <p class="text-center">
-      Would you like to add the code
+      Would you like to add the code <br />
       <span class="bg-primary font-bold text-xs px-2 rounded-full">{{
         props.rentedBookStatus.bookId
       }}</span>
+      <br />
       to the database?
     </p>
     <Button
       variant="secondary"
-      class="xw-full"
+      class="w-full"
       :disabled="isLoading"
       @click="handleAddBookInstance()"
       >Add to Database</Button
@@ -64,4 +65,10 @@ async function handleAddBookInstance() {
     isLoading.value = false;
   }
 }
+
+onMounted(async () => {
+  if (!props.rentedBookStatus.bookExists) {
+    await navigateTo("/app");
+  }
+});
 </script>

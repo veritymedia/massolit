@@ -1,21 +1,10 @@
 <script lang="ts" setup>
 import { Record } from "pocketbase";
 definePageMeta({
-  // middleware: ["not-authed-guard"],
+  middleware: ["not-authed-guard"],
 });
 
 const pb = usePocketbase();
-
-const allStudents = ref();
-async function searchManagebacStudents() {
-  try {
-    const res = await pb.send("/managebac/students?q=", {});
-    allStudents.value = res.students;
-    console.log(res);
-  } catch (err) {
-    console.log(err);
-  }
-}
 
 const { isOpen, closeDialog, openDialog } = useDialogState();
 
@@ -25,6 +14,12 @@ const bookStatus = ref<RentedBookStatus>({
   bookExists: false,
   codeExists: false,
   isRented: false,
+  parsedCode: {
+    id: "",
+    isbn: "",
+    version: -1,
+    rawCode: "",
+  },
 });
 
 // This is only for key on child component.
@@ -33,7 +28,8 @@ const scannedBookId = ref("");
 type MassolitCode = {
   version: number;
   id: string;
-  isbn: number;
+  isbn: string;
+  rawCode: string;
 };
 
 function parseCode(code: string): MassolitCode {
@@ -43,7 +39,8 @@ function parseCode(code: string): MassolitCode {
   const massolitObject: MassolitCode = {
     version: 1,
     id: "",
-    isbn: -1,
+    isbn: "",
+    rawCode: code,
   };
 
   if (s[0] !== "MASSOLIT") {
@@ -56,16 +53,16 @@ function parseCode(code: string): MassolitCode {
     throw new Error("Invalid code format: version number not a number");
   }
 
-  const parsedIntISBN = parseInt(s[3]);
+  // const parsedIntISBN = parseInt(s[3]);
 
-  if (isNaN(parsedIntISBN)) {
-    throw new Error("Invalid code format: version is NaN");
-  }
+  // if (isNaN(parsedIntISBN)) {
+  //   throw new Error("Invalid code format: version is NaN");
+  // }
 
   switch (parsedIntVersion) {
     case 1:
       massolitObject.id = s[2];
-      massolitObject.isbn = parsedIntISBN;
+      massolitObject.isbn = s[3];
       break;
     default:
       throw new Error("Invalid code format: unrecognised version value");
@@ -101,10 +98,11 @@ export type RentedBookStatus = {
   codeExists: boolean;
   bookExists: boolean;
   isRented: boolean;
-  book?: RentedBook;
-  bookId?: string;
+  parsedCode: MassolitCode;
   rental?: Rental;
   book_instance?: BookInstance;
+  book?: RentedBook;
+  bookId?: string;
 };
 
 async function findRental(qrScannedCode: string): Promise<Record | undefined> {
@@ -152,6 +150,7 @@ async function checkBookStatus(
     bookExists: false,
     codeExists: false,
     isRented: false,
+    parsedCode,
   };
   bookRentedStatusModel.bookId = parsedCode.id;
 
@@ -281,7 +280,16 @@ async function handleQrResult(result: string) {
 const route = useRoute();
 
 onMounted(() => {
-  // handleQrResult("MASSOLIT|1|GPSYCH-3|12312312312");
+  const routeCode = route.params.code;
+  console.log("Route code: ", routeCode);
+  if (routeCode) {
+    if (typeof routeCode === "string") {
+      handleQrResult(routeCode);
+    } else {
+      handleQrResult(routeCode[0]);
+    }
+  }
+  handleQrResult("MASSOLIT|1|XGPHYS-1|9781447982463");
 });
 </script>
 

@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
 import { useAlert } from "#imports";
-const { createAlert, activeAlert } = useAlert();
+const { activeAlert } = useAlert();
 </script>
 
 <style scoped>
