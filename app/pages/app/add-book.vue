@@ -112,13 +112,12 @@ async function addBookToDatabase() {
 
       const data = {
         title: volumeInfo.title,
-        isbn: isbn,
+        isbn: props.rentedBookStatus.parsedCode.isbn,
         cover_url: getBestBookCoverURL(volumeInfo.imageLinks),
       };
-      console.log(data);
+      const record = await pb.collection("books").create(data);
+      console.log(record);
     }
-
-    // const record = await pb.collection("books").create(data);
   } catch (err) {}
 }
 

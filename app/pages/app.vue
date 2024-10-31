@@ -289,7 +289,7 @@ onMounted(() => {
       handleQrResult(routeCode[0]);
     }
   }
-  handleQrResult("MASSOLIT|1|XGPHYS-1|9781447982463");
+  // handleQrResult("MASSOLIT|1|XGPHYS-1|9781447982463");
 });
 </script>
 
