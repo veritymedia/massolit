@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { Record } from "pocketbase";
 definePageMeta({
-  // middleware: ["not-authed-guard"],
+  middleware: ["not-authed-guard"],
 });
 
 const pb = usePocketbase();
@@ -294,7 +294,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="h-screen w-screen flex-col justify-between p-6 flex">
+  <div
+    class="h-screen w-screen background-gradient flex-col justify-between p-6 flex"
+  >
     <div
       v-if="isLoading"
       class="w-screen h-screen fixed top-0 left-0 bg-background flex items-center justify-center"
@@ -311,9 +313,6 @@ onMounted(() => {
       </div>
       <div class="mt-20">
         <div v-if="route.name === 'app'">
-          <Card class="flex items-center p-5 justify-center">
-            Scan a book QR code to get started.
-          </Card>
           <StudentBooks />
         </div>
         <NuxtPage v-else :rentedBookStatus="bookStatus" :key="scannedBookId" />
@@ -335,3 +334,14 @@ onMounted(() => {
     </Dialog>
   </div>
 </template>
+
+<style>
+.background-gradient {
+  background: rgb(2, 0, 36);
+  background: linear-gradient(
+    327deg,
+    rgba(2, 0, 36, 1) 0%,
+    rgba(35, 35, 99, 1) 100%
+  );
+}
+</style>

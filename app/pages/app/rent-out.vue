@@ -38,7 +38,7 @@
             </div>
             <Card
               v-if="studentList.length !== 0 && studentSearchTerm.length !== 0"
-              class="mt-2 absolute top-10 bg-background z-50 w-full overflow-scroll"
+              class="mt-2 absolute top-10 bg-background z-50 border-primary w-full overflow-scroll"
             >
               <ul class="flex flex-col">
                 <li

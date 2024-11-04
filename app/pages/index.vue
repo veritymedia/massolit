@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import type { Label } from "radix-vue";
+definePageMeta({
+  middleware: ["authed-guard"],
+});
+// import type { Label } from "radix-vue";
 
 const pb = usePocketbase();
 
