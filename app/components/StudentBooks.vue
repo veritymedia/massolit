@@ -224,7 +224,7 @@ function dateToLocaleString(date: string): string {
         </Button>
       </div>
       <div v-if="studentRentalList.length > 0">
-        <ul class="flex flex-col gap-2">
+        <ul class="overflow-auto h-[30rem] flex flex-col gap-2">
           <Card
             v-for="rental in studentRentalList"
             :key="rental.id"
