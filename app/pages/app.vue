@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { Record } from "pocketbase";
 definePageMeta({
-  middleware: ["not-authed-guard"],
+  // middleware: ["not-authed-guard"],
 });
 
 const pb = usePocketbase();
@@ -314,6 +314,7 @@ onMounted(() => {
           <Card class="flex items-center p-5 justify-center">
             Scan a book QR code to get started.
           </Card>
+          <StudentBooks />
         </div>
         <NuxtPage v-else :rentedBookStatus="bookStatus" :key="scannedBookId" />
       </div>
