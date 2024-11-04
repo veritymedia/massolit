@@ -1,7 +1,4 @@
 <script lang="ts" setup>
-definePageMeta({
-  middleware: ["authed-guard"]
-})
 const isDark = useDark();
 const toggleDark = useToggle(isDark);
 
