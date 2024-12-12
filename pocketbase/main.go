@@ -9,13 +9,21 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
+	"github.com/veritymedia/massolit/pocketbase/tasks"
 )
+
+type ConfigRecord struct {
+	id    string
+	name  string
+	value string
+}
 
 //go:embed all:.output/public
 var public embed.FS
@@ -29,6 +37,54 @@ func main() {
 	}
 	managebacUrl := "https://api.managebac.com/v2"
 	managebacApiKey := os.Getenv("MANAGEBAC_API")
+
+	if len(managebacApiKey) == 0 {
+		log.Panic("No Managebac Key has been found. Exiting.")
+	}
+
+	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+		go func() {
+			for {
+
+				modifiedSinceRecord, err := e.App.Dao().FindRecordsByFilter("config", "name='last_behavior_sync_datetime'", "", 1, 0)
+
+				if err != nil {
+					fmt.Println("CRON::BEHAVIOUR_NOTES Error: Could not fetch latest edit time")
+				}
+
+				if len(modifiedSinceRecord) == 0 {
+					fmt.Println("CRON::BEHAVIOUR_NOTES Error: Could not fetch, length 0")
+
+				}
+
+				var modifiedSinceValue string = modifiedSinceRecord[0].GetString("value")
+
+				fmt.Printf("CRON::BEHAVIOUR_NOTES Last modified %s", modifiedSinceValue)
+
+				resp, err := tasks.FetchBehaviorNotes(managebacApiKey, modifiedSinceValue, managebacUrl)
+
+				fmt.Printf("NOTES FROM MB: \n%v", &resp)
+				if err != nil {
+					log.Printf("Error fetching behavior notes: %v", err)
+				} else {
+
+					if err := tasks.SaveBehaviorNotes(app, resp.BehaviorNotes); err != nil {
+						log.Printf("Error saving behavior notes: %v", err)
+					}
+
+					updatedSinceRecord := modifiedSinceRecord[0]
+					updatedSinceRecord.Set("value", time.Now().Format(time.RFC3339))
+
+					if err := app.Dao().SaveRecord(updatedSinceRecord); err != nil {
+						fmt.Printf("Could not save new modified_since param: %s", err)
+					}
+				}
+
+				time.Sleep(5 * time.Minute)
+			}
+		}()
+		return nil
+	})
 
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 

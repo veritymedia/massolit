@@ -1,10 +1,11 @@
-module github.com/j-wil/pocket-nuxt
+module github.com/veritymedia/massolit
 
 go 1.22
 
 toolchain go1.22.2
 
 require (
+	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v5 v5.0.0-20230722203903-ec5b858dab61
 	github.com/pocketbase/pocketbase v0.22.21
 )
@@ -45,7 +46,6 @@ require (
 	github.com/googleapis/gax-go/v2 v2.13.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
