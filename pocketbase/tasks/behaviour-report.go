@@ -3,30 +3,25 @@ package tasks
 import (
 	"fmt"
 	"net/mail"
-	"os"
 	"time"
 
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/tools/mailer"
 )
 
-// DetentionNote extends BehaviorNote with additional tracking
 type DetentionNote struct {
 	BehaviorNote
 	DetenionComplete bool `json:"detention_complete"`
 }
 
-// getDetentionNotes retrieves incomplete detention notes
 func GetDetentionNotes(app *pocketbase.PocketBase) ([]DetentionNote, error) {
-	// Ensure the collection exists
 	collection, err := app.Dao().FindCollectionByNameOrId("behavior_notes")
 	if err != nil {
 		return nil, fmt.Errorf("collection not found: %v", err)
 	}
 
-	// Prepare query to find detention notes not marked as complete
 	results, err := app.Dao().FindRecordsByFilter(collection.Name,
-		"behavior_type = 'Detention' AND detention_complete = false", "", 200, 0)
+		"next_step ~ 'Detention' && action_complete = false", "-created_at", 200, 0)
 	if err != nil {
 		return nil, fmt.Errorf("error querying detention notes: %v", err)
 	}
@@ -61,8 +56,46 @@ func GetDetentionNotes(app *pocketbase.PocketBase) ([]DetentionNote, error) {
 
 	return detentionNotes, nil
 }
+func PrettyFormatDate(dateStr string) string {
+	parsedTime, err := time.Parse(time.RFC3339Nano, dateStr)
+	if err != nil {
+		return "Invalid date"
+	}
 
-// generateDetentionReportHTML creates an HTML report for detention notes
+	now := time.Now()
+
+	daysDiff := int(now.Sub(parsedTime).Hours() / 24)
+
+	month := parsedTime.Format("January")
+	day := parsedTime.Day()
+
+	ordinalSuffix := func(day int) string {
+		switch {
+		case day%10 == 1 && day%100 != 11:
+			return "st"
+		case day%10 == 2 && day%100 != 12:
+			return "nd"
+		case day%10 == 3 && day%100 != 13:
+			return "rd"
+		default:
+			return "th"
+		}
+	}
+
+	dateFormat := fmt.Sprintf("%s %d%s", month, day, ordinalSuffix(day))
+
+	if daysDiff > 0 {
+		dateFormat += fmt.Sprintf(" (%d day%s ago)", daysDiff, func() string {
+			if daysDiff != 1 {
+				return "s"
+			}
+			return ""
+		}())
+	}
+
+	return dateFormat
+}
+
 func generateDetentionReportHTML(notes []DetentionNote) string {
 	var htmlBody string
 
@@ -71,47 +104,46 @@ func generateDetentionReportHTML(notes []DetentionNote) string {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detention Notes Report</title>
-    <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        .header { background-color: #4CAF50; color: white; padding: 10px; text-align: center; }
-    </style>
 </head>
-<body>
-    <div class="header">
-        <h1>Outstanding Detention Notes</h1>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; background-color: #f9f9f9; color: #333; padding: 20px;">
+    <div class="header" style="background-color: #232363; color: white; padding: 20px; text-align: center; border-radius: 8px;">
+        <h1>Outstanding Detentions</h1>
         <p>Generated on: %s</p>
     </div>
 
-    <table>
+    <table style="width: 100%; border-collapse: collapse; margin-top: 20px; border-radius: 8px; overflow: hidden;">
         <thead>
             <tr>
-                <th>Student</th>
-                <th>Grade</th>
-                <th>Incident Time</th>
-                <th>Reported By</th>
-                <th>Notes</th>
-                <th>Next Step</th>
+                <th style="border: 1px solid #ddd; padding: 12px; text-align: left; background-color: #232363; color: white; text-transform: uppercase; font-weight: bold;">Student</th>
+                <th style="border: 1px solid #ddd; padding: 12px; text-align: left; background-color: #232363; color: white; text-transform: uppercase; font-weight: bold;">Grade</th>
+                <th style="border: 1px solid #ddd; padding: 12px; text-align: left; background-color: #232363; color: white; text-transform: uppercase; font-weight: bold;">Incident Date</th>
+                <th style="border: 1px solid #ddd; padding: 12px; text-align: left; background-color: #232363; color: white; text-transform: uppercase; font-weight: bold;">Reported By</th>
+                <th style="border: 1px solid #ddd; padding: 12px; text-align: left; background-color: #232363; color: white; text-transform: uppercase; font-weight: bold;">Notes</th>
+                <th style="border: 1px solid #ddd; padding: 12px; text-align: left; background-color: #232363; color: white; text-transform: uppercase; font-weight: bold;">Next Step</th>
             </tr>
         </thead>
         <tbody>
 `, time.Now().Format("2006-01-02 15:04:05"))
 
-	for _, note := range notes {
+	for i, note := range notes {
+		var bgColor string
+		if i%2 == 0 {
+			bgColor = "#f2f8fc"
+		} else {
+			bgColor = "#ffffff"
+		}
 		htmlBody += fmt.Sprintf(`
-            <tr>
-                <td>%s %s</td>
-                <td>%s</td>
-                <td>%s</td>
-                <td>%s</td>
-                <td>%s</td>
-                <td>%s</td>
+            <tr style="background-color: %s;">
+                <td style="border: 1px solid #ddd; padding: 12px; text-align: left;">%s %s</td>
+                <td style="border: 1px solid #ddd; padding: 12px; text-align: left;">%s</td>
+                <td style="border: 1px solid #ddd; padding: 12px; text-align: left;">%s</td>
+                <td style="border: 1px solid #ddd; padding: 12px; text-align: left;">%s</td>
+                <td style="border: 1px solid #ddd; padding: 12px; text-align: left;">%s</td>
+                <td style="border: 1px solid #ddd; padding: 12px; text-align: left;">%s</td>
             </tr>
-`, note.FirstName, note.LastName, note.Grade, note.IncidentTime,
-			note.ReportedBy, note.Notes, note.NextStep)
+`, bgColor, note.FirstName, note.LastName, note.Grade, PrettyFormatDate(note.IncidentTime), note.ReportedBy, note.Notes, note.NextStep)
 	}
 
 	htmlBody += fmt.Sprintf(`
@@ -126,30 +158,30 @@ func generateDetentionReportHTML(notes []DetentionNote) string {
 	return htmlBody
 }
 
-// sendDetentionReport sends a detention report using PocketBase mailer
 func SendDetentionReport(app *pocketbase.PocketBase, notes []DetentionNote) error {
-	// Get the report recipient from environment or app settings
-	recipient := os.Getenv("DETENTION_REPORT_RECIPIENT")
-	if recipient == "" {
-		return fmt.Errorf("no recipient email set")
+	mailListRecord, err := app.Dao().FindRecordsByFilter("mail_list", "subs~'behavior'", "", 100, 0)
+
+	if err != nil {
+		return fmt.Errorf("Could not find mail_list records")
 	}
 
-	// Generate HTML report
+	recipients := []mail.Address{}
+
+	for _, record := range mailListRecord {
+		recipients = append(recipients, mail.Address{Address: record.GetString("email")})
+	}
+
 	htmlBody := generateDetentionReportHTML(notes)
 
-	// Prepare the message
 	message := &mailer.Message{
 		From: mail.Address{
 			Address: app.Settings().Meta.SenderAddress,
 			Name:    app.Settings().Meta.SenderName,
 		},
-		To: []mail.Address{
-			{Address: recipient},
-		},
+		To:      recipients,
 		Subject: fmt.Sprintf("Detention Notes Report - %s", time.Now().Format("2006-01-02")),
 		HTML:    htmlBody,
 	}
 
-	// Send the email
 	return app.NewMailClient().Send(message)
 }

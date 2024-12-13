@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/mail"
 	"net/url"
 	"os"
 	"time"
@@ -117,6 +118,34 @@ func main() {
 	})
 
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+		e.Router.GET("/test-email", func(c echo.Context) error {
+			fmt.Println("/test-email")
+
+			mailListRecord, err := app.Dao().FindRecordsByFilter("mail_list", "subs~'behavior'", "", 100, 0)
+
+			if err != nil {
+				return fmt.Errorf("Could not find mail_list records")
+			}
+
+			recipients := []mail.Address{}
+
+			for _, record := range mailListRecord {
+				recipients = append(recipients, mail.Address{Address: record.GetString("email")})
+			}
+
+			notes, err := tasks.GetDetentionNotes(app)
+			if err != nil {
+				return fmt.Errorf("Error fetching detention notes: %v", err)
+			}
+
+			if len(notes) > 0 {
+				if err := tasks.SendDetentionReport(app, notes); err != nil {
+					log.Printf("Error sending detention report: %v", err)
+				}
+			}
+
+			return err
+		})
 
 		e.Router.GET("/managebac/students", func(c echo.Context) error {
 
