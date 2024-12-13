@@ -16,6 +16,7 @@ import (
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/tools/cron"
 	"github.com/veritymedia/massolit/pocketbase/tasks"
 )
 
@@ -43,6 +44,36 @@ func main() {
 	}
 
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+		scheduler := cron.New()
+
+		// Add a job to send detention reports daily at 8 AM
+		scheduler.MustAdd("sendReport", "0 8 * * *", func() {
+			// Fetch outstanding detention notes
+			notes, err := tasks.GetDetentionNotes(app)
+			if err != nil {
+				log.Printf("Error fetching detention notes: %v", err)
+				return
+			}
+
+			// If there are outstanding detentions, send report
+			if len(notes) > 0 {
+				if err := tasks.SendDetentionReport(app, notes); err != nil {
+					log.Printf("Error sending detention report: %v", err)
+				}
+			}
+		})
+
+		if err != nil {
+			return fmt.Errorf("failed to add detention report cron job: %v", err)
+		}
+
+		// Start the scheduler
+		scheduler.Start()
+
+		return nil
+	})
+
+	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		go func() {
 			for {
 
@@ -59,11 +90,10 @@ func main() {
 
 				var modifiedSinceValue string = modifiedSinceRecord[0].GetString("value")
 
-				fmt.Printf("CRON::BEHAVIOUR_NOTES Last modified %s", modifiedSinceValue)
+				fmt.Printf("CRON::BEHAVIOUR_NOTES Last modified %s\n", modifiedSinceValue)
 
 				resp, err := tasks.FetchBehaviorNotes(managebacApiKey, modifiedSinceValue, managebacUrl)
 
-				fmt.Printf("NOTES FROM MB: \n%v", &resp)
 				if err != nil {
 					log.Printf("Error fetching behavior notes: %v", err)
 				} else {

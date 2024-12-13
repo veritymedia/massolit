@@ -14,7 +14,7 @@ import (
 
 // BehaviorNote represents the structure of behavior notes from ManageBac
 type BehaviorNote struct {
-	ID                int64  `json:"id"`
+	ID                int    `json:"id"`
 	StudentID         string `json:"student_id"`
 	FirstName         string `json:"first_name"`
 	LastName          string `json:"last_name"`
@@ -25,7 +25,7 @@ type BehaviorNote struct {
 	Notes             string `json:"notes"`
 	NextStep          string `json:"next_step"`
 	NextStepDate      string `json:"next_step_date"`
-	AuthorID          int64  `json:"author_id"`
+	AuthorID          int    `json:"author_id"`
 	ReportedBy        string `json:"reported_by"`
 	HomeRoomAdvisor   string `json:"homeroom_advisor"`
 	VisibleToParents  bool   `json:"visible_to_parents"`
@@ -67,7 +67,6 @@ func FetchBehaviorNotes(authToken string, modifiedSince string, managebacUrl str
 	u.RawQuery = rawQuery
 	qualifiedUrl := fmt.Sprintf("%v", u)
 
-	fmt.Printf("URL: %s \n", qualifiedUrl)
 	req, err := http.NewRequest(http.MethodGet, qualifiedUrl, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %v", err)
@@ -102,7 +101,6 @@ func SaveBehaviorNotes(app *pocketbase.PocketBase, notes []BehaviorNote) error {
 		return fmt.Errorf("collection not found: %v", err)
 	}
 
-	fmt.Println("Collection: ", collection.Name)
 	for _, note := range notes {
 		// Check if note already exists
 		existingNote, err := app.Dao().FindRecordById(
