@@ -1,9 +1,25 @@
 <script setup lang="ts">
+import { columns } from "@/components/behavior/behavior";
+
 definePageMeta({
   middleware: ["not-authed-guard"],
 });
 
 const isLoading = ref(false);
+
+const data = ref<Payment[]>([]);
+
+async function getData(): Promise<Payment[]> {
+  // Fetch data from your API here.
+  return [
+    {
+      id: "728ed52f",
+      amount: 100,
+      status: "pending",
+      email: "m@example.com",
+    },
+  ];
+}
 </script>
 <template>
   <div
@@ -28,9 +44,7 @@ const isLoading = ref(false);
         <!-- <p class="text-sm">{{ pb.authStore.model?.email }}</p> -->
       </div>
       <div class="mt-20">
-        <div v-if="$route.name === 'app'">
-          <StudentBooks />
-        </div>
+        <BehaviorDetentionTable />
       </div>
     </div>
   </div>

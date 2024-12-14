@@ -32,6 +32,7 @@ type BehaviorNote struct {
 	VisibleToStudents bool   `json:"visible_to_students"`
 	CreatedAt         string `json:"created_at"`
 	UpdatedAt         string `json:"updated_at"`
+	ActionComplete    bool   `json:"action_complete"`
 }
 
 // ManageBacResponse represents the full API response
