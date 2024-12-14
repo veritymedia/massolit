@@ -143,8 +143,50 @@ func main() {
 					log.Printf("Error sending detention report: %v", err)
 				}
 			}
-
 			return err
+		})
+
+		e.Router.GET("/homepage-stats", func(e echo.Context) error {
+
+			type IdRecord struct {
+				ID string `db:"id" json:"id"`
+			}
+			var bookInstanceRecords []IdRecord
+
+			err := app.Dao().DB().Select("id").From("book_instances").All(&bookInstanceRecords)
+
+			if err != nil {
+				return fmt.Errorf("Error: %s", err.Error())
+			}
+
+			var bookRecords []IdRecord
+
+			err = app.Dao().DB().Select("id").From("books").All(&bookRecords)
+
+			if err != nil {
+				return fmt.Errorf("Error: %s", err.Error())
+			}
+
+			var rentalsRecords []IdRecord
+
+			err = app.Dao().DB().Select("id").From("rentals").All(&rentalsRecords)
+
+			if err != nil {
+				return fmt.Errorf("Error: %s", err.Error())
+			}
+
+			type BookSummary struct {
+				Rentals       int `json:"rentals"`
+				BookInstances int `json:"book_instances"`
+				Books         int `json:"books"`
+			}
+			bookSummary := BookSummary{}
+			bookSummary.Rentals = len(rentalsRecords)
+			bookSummary.Books = len(bookRecords)
+			bookSummary.BookInstances = len(bookInstanceRecords)
+
+			e.JSON(200, bookSummary)
+			return nil
 		})
 
 		e.Router.GET("/managebac/students", func(c echo.Context) error {

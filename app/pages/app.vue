@@ -306,7 +306,7 @@ onMounted(() => {
     <AppAlert />
     <div>
       <div class="flex items-center justify-between">
-        <NuxtLink to="/app">
+        <NuxtLink to="/">
           <img src="/images/logos/massolit-logo.png" class="w-24" alt="" />
         </NuxtLink>
         <p class="text-sm">{{ pb.authStore.model?.email }}</p>
