@@ -308,7 +308,8 @@ onMounted(async () => {
 
 <template>
   <div class="w-full">
-    <div class="flex items-center gap-2 py-4 text-xs"></div>
+    <BehaviorDetentionTablePaginateControl :table="table" />
+
     <div class="border rounded-md text-xs">
       <Table class="border-[white]">
         <TableHeader>
@@ -380,7 +381,6 @@ onMounted(async () => {
     </div>
 
     <div class="flex items-center justify-end py-4 space-x-2">
-      <BehaviorDetentionTablePaginateControl :table="table" />
       <!-- <div class="space-x-2">
         <Button
           variant="outline"

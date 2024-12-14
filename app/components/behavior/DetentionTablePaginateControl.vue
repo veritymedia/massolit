@@ -17,34 +17,8 @@ defineProps<DataTablePaginationProps>();
 </script>
 
 <template>
-  <div class="flex items-center justify-between px-2">
-    <div class="flex-1 text-sm text-muted-foreground">
-      {{ table.getFilteredSelectedRowModel().rows.length }} of
-      {{ table.getFilteredRowModel().rows.length }} row(s) selected.
-    </div>
+  <div class="flex items-center justify-between mb-4">
     <div class="flex items-center space-x-6 lg:space-x-8">
-      <div class="flex items-center space-x-2">
-        <p class="text-sm font-medium">Rows per page</p>
-        <Select
-          :model-value="`${table.getState().pagination.pageSize}`"
-          @update:model-value="table.setPageSize"
-        >
-          <SelectTrigger class="h-8 w-[70px]">
-            <SelectValue
-              :placeholder="`${table.getState().pagination.pageSize}`"
-            />
-          </SelectTrigger>
-          <SelectContent side="top">
-            <SelectItem
-              v-for="pageSize in [10, 20, 30, 40, 50]"
-              :key="pageSize"
-              :value="`${pageSize}`"
-            >
-              {{ pageSize }}
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
       <div
         class="flex w-[100px] items-center justify-center text-sm font-medium"
       >
@@ -59,7 +33,10 @@ defineProps<DataTablePaginationProps>();
           @click="table.setPageIndex(0)"
         >
           <span class="sr-only">Go to first page</span>
-          <DoubleArrowLeftIcon class="w-4 h-4" />
+          <Icon
+            name="material-symbols:double-arrow-rounded"
+            class="rotate-180 w-4 h-4"
+          />
         </Button>
         <Button
           variant="outline"
@@ -68,7 +45,7 @@ defineProps<DataTablePaginationProps>();
           @click="table.previousPage()"
         >
           <span class="sr-only">Go to previous page</span>
-          <ChevronLeftIcon class="w-4 h-4" />
+          <Icon name="material-symbols:chevron-left-rounded" class="w-4 h-4" />
         </Button>
         <Button
           variant="outline"
@@ -77,7 +54,7 @@ defineProps<DataTablePaginationProps>();
           @click="table.nextPage()"
         >
           <span class="sr-only">Go to next page</span>
-          <ChevronRightIcon class="w-4 h-4" />
+          <Icon name="material-symbols:chevron-right-rounded" class="w-4 h-4" />
         </Button>
         <Button
           variant="outline"
@@ -86,7 +63,7 @@ defineProps<DataTablePaginationProps>();
           @click="table.setPageIndex(table.getPageCount() - 1)"
         >
           <span class="sr-only">Go to last page</span>
-          <DoubleArrowRightIcon class="w-4 h-4" />
+          <Icon name="material-symbols:double-arrow-rounded" class="w-4 h-4" />
         </Button>
       </div>
     </div>
