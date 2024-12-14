@@ -22,6 +22,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import DOMPurify from "dompurify";
+
 import { cn, valueUpdater } from "@/lib/utils";
 import { CaretSortIcon, ChevronDownIcon } from "@radix-icons/vue";
 import {
@@ -34,9 +36,10 @@ import {
   getSortedRowModel,
   useVueTable,
 } from "@tanstack/vue-table";
+import { type RecordListQueryParams } from "pocketbase";
 import { h, ref } from "vue";
 
-type BehaviorNote = {
+export type BehaviorNote = {
   id: string;
   student_id: string;
   first_name: string;
@@ -58,7 +61,7 @@ type BehaviorNote = {
   action_complete: boolean;
 };
 
-const data = ref<BehaviorNote[]>([
+const data2 = ref<BehaviorNote[]>([
   {
     id: "1",
     student_id: "S12345",
@@ -124,6 +127,8 @@ const data = ref<BehaviorNote[]>([
   },
 ]);
 
+const data = ref<BehaviorNote[]>([]);
+
 const setComplete = (id: string) => {
   console.log(`Row with id ${id} set to complete.`);
 
@@ -166,7 +171,11 @@ const columns = [
     enableSorting: true,
     enableHiding: false,
   }),
-
+  columnHelper.accessor("grade", {
+    header: ({ table }) => {
+      return h("div", {}, "Year");
+    },
+  }),
   columnHelper.display({
     id: "full_name",
     header: () => h("div", { class: " left-right" }, "Full Name"),
@@ -175,6 +184,22 @@ const columns = [
         "div",
         { class: "text-left font-medium" },
         row.original["first_name"] + " " + row.original["last_name"],
+      );
+    },
+  }),
+  columnHelper.accessor("incident_time", {
+    header: ({ table }) => {
+      return h("div", {}, "Date");
+    },
+    cell: ({ row }) => {
+      return h(
+        "p",
+        {},
+        new Intl.DateTimeFormat("en-UK", {
+          day: "numeric",
+          month: "numeric",
+          year: "2-digit",
+        }).format(new Date(row.getValue("incident_time"))),
       );
     },
   }),
@@ -195,6 +220,23 @@ const columns = [
         },
         row.original["action_complete"] ? "Undo" : "Done",
       );
+    },
+  }),
+  columnHelper.accessor("notes", {
+    header: ({ table }) => {
+      return h("div", {}, "Note");
+    },
+    cell: ({ getValue }) => {
+      // Sanitize HTML while keeping inline styles
+      const cleanHtml = DOMPurify.sanitize(getValue(), {
+        ALLOWED_TAGS: ["p", "span", "strong", "em", "u", "b", "i"],
+        ALLOWED_ATTR: ["style", "class"],
+      });
+
+      return h("div", {
+        innerHTML: cleanHtml,
+        class: "rich-text-content", // Optional: add a class for additional styling
+      });
     },
   }),
 ];
@@ -242,13 +284,33 @@ const table = useVueTable({
     },
   },
 });
+
+const pb = usePocketbase();
+
+async function getBehaviourNotes(page: number = 1) {
+  try {
+    const params: RecordListQueryParams = {
+      sort: "-action_complete,next_step_date",
+    };
+
+    const res = await pb.collection("behavior_notes").getList(page, 20, params);
+    console.log(res);
+    data.value = res.items;
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+onMounted(async () => {
+  await getBehaviourNotes();
+});
 </script>
 
 <template>
   <div class="w-full">
     <div class="flex items-center gap-2 py-4 text-xs"></div>
     <div class="border rounded-md text-xs">
-      <Table>
+      <Table class="border-[white]">
         <TableHeader>
           <TableRow
             v-for="headerGroup in table.getHeaderGroups()"
@@ -276,10 +338,14 @@ const table = useVueTable({
         <TableBody>
           <template v-if="table.getRowModel().rows?.length">
             <template v-for="row in table.getRowModel().rows" :key="row.id">
-              <TableRow :data-state="row.getIsSelected() && 'selected'">
+              <TableRow
+                class=""
+                :data-state="row.getIsSelected() && 'selected'"
+              >
                 <TableCell
                   v-for="cell in row.getVisibleCells()"
                   :key="cell.id"
+                  class=""
                   :data-pinned="cell.column.getIsPinned()"
                   :class="
                     cn(
@@ -314,7 +380,8 @@ const table = useVueTable({
     </div>
 
     <div class="flex items-center justify-end py-4 space-x-2">
-      <div class="space-x-2">
+      <BehaviorDetentionTablePaginateControl :table="table" />
+      <!-- <div class="space-x-2">
         <Button
           variant="outline"
           size="sm"
@@ -331,7 +398,7 @@ const table = useVueTable({
         >
           Next
         </Button>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
