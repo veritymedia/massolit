@@ -1,4 +1,8 @@
 <script setup lang="ts">
+definePageMeta({
+  middleware: ["not-authed-guard"],
+});
+
 const isLoading = ref(false);
 </script>
 <template>

@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import { Record } from "pocketbase";
+
 definePageMeta({
   middleware: ["not-authed-guard"],
 });
-
 const pb = usePocketbase();
 
 const { isOpen, closeDialog, openDialog } = useDialogState();

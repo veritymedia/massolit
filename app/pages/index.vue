@@ -1,8 +1,4 @@
 <script setup lang="ts">
-definePageMeta({
-  middleware: ["authed-guard"],
-});
-
 const pb = usePocketbase();
 
 type BookFacts = {
@@ -45,30 +41,36 @@ onMounted(async () => {
       <h1>Services</h1>
       <div class="flex w-full flex-col gap-2">
         <Card class="p-4 flex flex-col gap-4">
-          <div class="flex gap-2 items-center">
+          <div class="flex gap-4 items-center">
             <ServiceBookTrackerIcon />
             <h2>Book Tracker</h2>
           </div>
 
           <div class="flex w-full justify-center gap-4 text-[gray]">
             <div class="flex flex-col gap items-center justify-center">
-              <span class="text-3xl font-bold text-foreground">{{
-                stats.books.books
-              }}</span>
+              <span
+                v-if="stats.books.books !== 0"
+                class="text-3xl font-bold text-foreground"
+                >{{ stats.books.books }}</span
+              >
               Books
             </div>
 
             <div class="flex flex-col gap items-center justify-center">
-              <span class="text-3xl font-bold text-foreground">{{
-                stats.books.book_instances
-              }}</span>
+              <span
+                v-if="stats.books.book_instances !== 0"
+                class="text-3xl font-bold text-foreground"
+                >{{ stats.books.book_instances }}</span
+              >
               Copies
             </div>
 
             <div class="flex flex-col gap items-center justify-center">
-              <span class="text-3xl font-bold text-foreground">{{
-                stats.books.rentals
-              }}</span>
+              <span
+                v-if="stats.books.rentals !== 0"
+                class="text-3xl font-bold text-foreground"
+                >{{ stats.books.rentals }}</span
+              >
               Rented
             </div>
           </div>
@@ -81,7 +83,7 @@ onMounted(async () => {
         </Card>
 
         <Card class="flex flex-col w-full p-4 gap-4 items-center">
-          <div class="flex gap-2 w-full items-center">
+          <div class="flex gap-4 w-full items-center">
             <ServiceDetentionsIcon />
             <h2>Detention Tracker</h2>
           </div>

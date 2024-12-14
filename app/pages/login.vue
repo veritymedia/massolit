@@ -1,8 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
-  middleware: ["authed-guard"],
+  middleware: ["not-authed-guard"],
 });
-// import type { Label } from "radix-vue";
 
 const pb = usePocketbase();
 
@@ -20,7 +19,7 @@ async function login() {
       .authWithPassword(userModel.value.email, userModel.value.pass);
     console.log(user);
     console.log(pb.authStore.model);
-    await navigateTo("/app");
+    await navigateTo("/");
   } catch (err) {
     console.log(err);
   }
