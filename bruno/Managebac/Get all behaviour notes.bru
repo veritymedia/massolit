@@ -5,9 +5,14 @@ meta {
 }
 
 get {
-  url: https://api.managebac.com/v2/behavior/notes
+  url: https://api.managebac.com/v2/behavior/notes?modified_since=2024-09-12T22:35:43+00:00&vcb=bcvb
   body: none
   auth: none
+}
+
+params:query {
+  modified_since: 2024-09-12T22:35:43+00:00
+  vcb: bcvb
 }
 
 headers {

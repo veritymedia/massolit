@@ -111,6 +111,7 @@ func generateDetentionReportHTML(notes []DetentionNote) string {
     <div class="header" style="background-color: #232363; color: white; padding: 20px; text-align: center; border-radius: 8px;">
         <h1>Outstanding Detentions</h1>
         <p>Generated on: %s</p>
+        <a style="color: white; font-weight: bold; font-size: 1em;" href="https://massolit.app/behavior">Massolit Detentions</a>
     </div>
 
     <table style="width: 100%; border-collapse: collapse; margin-top: 20px; border-radius: 8px; overflow: hidden;">

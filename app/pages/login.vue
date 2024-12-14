@@ -33,7 +33,30 @@ async function login() {
     </div>
 
     <Card class="">
-      <div></div>
+      <CardHeader>Login to Massolit</CardHeader>
+      <CardContent class="flex flex-col gap-4">
+        <form>
+          <label for="email">Email</label>
+          <Input
+            id="email"
+            :modelValue="userModel.email"
+            @update:modelValue="(v: string) => (userModel.email = v)"
+            placeholder="someone@email.com"
+            type="email"
+          />
+        </form>
+        <form>
+          <label for="password">Password</label>
+          <Input
+            id="password"
+            :modelValue="userModel.pass"
+            @update:modelValue="(v: string) => (userModel.pass = v)"
+            type="password"
+          />
+        </form>
+        <Button @click="login">Login</Button>
+      </CardContent>
     </Card>
+    <div></div>
   </div>
 </template>
