@@ -5,7 +5,17 @@ export default defineNuxtConfig({
 
   srcDir: "app",
   css: ["./app/assets/css/shadcn.css"],
-
+  app: {
+    head: {
+      link: [
+        {
+          rel: "icon",
+          type: "image/x-icon",
+          href: "/favicon/favicon.ico",
+        },
+      ],
+    },
+  },
   build: {
     transpile: ["primevue"],
   },
