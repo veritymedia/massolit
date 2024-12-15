@@ -107,15 +107,6 @@ func main() {
 	})
 
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		// e.Router.GET("/test-email", func(c echo.Context) error {
-		// 	fmt.Println("/test-email")
-		// 	err := tasks.HandleDetentionReportSend(app)
-		// 	if err != nil {
-		// 		c.HTML(500, "<p>Could not email report</p>")
-		// 	}
-		// 	c.HTML(200, "<p>Report sent.</p>")
-		// 	return nil
-		// })
 
 		e.Router.GET("/homepage-stats", func(e echo.Context) error {
 
