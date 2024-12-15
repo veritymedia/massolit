@@ -136,10 +136,14 @@ const toggleComplete = async (id: string) => {
   if (row) {
     if (row.action_complete === true) {
       const res = await setActionCompleteOnRecord(id, false);
-      row.action_complete = res.action_complete;
+      if (res) {
+        row.action_complete = res.action_complete;
+      }
     } else {
-      row.action_complete = true;
-      setActionCompleteOnRecord(id, true);
+      const res = await setActionCompleteOnRecord(id, true);
+      if (res) {
+        row.action_complete = res.action_complete;
+      }
     }
     console.log("Note ID: ", row.id);
   }
