@@ -61,72 +61,6 @@ export type BehaviorNote = {
   action_complete: boolean;
 };
 
-const data2 = ref<BehaviorNote[]>([
-  {
-    id: "1",
-    student_id: "S12345",
-    first_name: "John",
-    last_name: "Doe",
-    email: "john.doe@example.com",
-    grade: "10",
-    incident_time: "2023-12-01T10:15:00Z",
-    behavior_type: "Disrespect",
-    notes: "Student was talking back to the teacher during class.",
-    next_step: "Parent meeting scheduled",
-    next_step_date: "2023-12-05",
-    author_id: 101,
-    reported_by: "Ms. Smith",
-    homeroom_advisor: "Mr. Johnson",
-    visible_to_parents: true,
-    visible_to_students: false,
-    created_at: "2023-12-01T10:30:00Z",
-    updated_at: "2023-12-01T11:00:00Z",
-    action_complete: false,
-  },
-  {
-    id: "2",
-    student_id: "S67890",
-    first_name: "Emily",
-    last_name: "Clark",
-    email: "emily.clark@example.com",
-    grade: "9",
-    incident_time: "2023-11-28T14:45:00Z",
-    behavior_type: "Cheating",
-    notes: "Student was caught copying during the math exam.",
-    next_step: "Detention assigned",
-    next_step_date: "2023-11-30",
-    author_id: 102,
-    reported_by: "Mr. Brown",
-    homeroom_advisor: "Ms. Green",
-    visible_to_parents: true,
-    visible_to_students: true,
-    created_at: "2023-11-28T15:00:00Z",
-    updated_at: "2023-11-28T15:30:00Z",
-    action_complete: true,
-  },
-  {
-    id: "3",
-    student_id: "S54321",
-    first_name: "Michael",
-    last_name: "Lee",
-    email: "michael.lee@example.com",
-    grade: "11",
-    incident_time: "2023-12-02T09:00:00Z",
-    behavior_type: "Bullying",
-    notes: "Student was observed intimidating another student in the hallway.",
-    next_step: "Counselor session scheduled",
-    next_step_date: "2023-12-06",
-    author_id: 103,
-    reported_by: "Mrs. White",
-    homeroom_advisor: "Ms. Carter",
-    visible_to_parents: false,
-    visible_to_students: false,
-    created_at: "2023-12-02T09:30:00Z",
-    updated_at: "2023-12-02T10:00:00Z",
-    action_complete: false,
-  },
-]);
-
 const data = ref<BehaviorNote[]>([]);
 
 const toggleComplete = async (id: string) => {
@@ -180,6 +114,9 @@ const columns = [
   columnHelper.accessor("grade", {
     header: ({ table }) => {
       return h("div", {}, "Year");
+    },
+    cell: ({ row }) => {
+      return h("p", {}, row.original["grade"].split(" ")[1]);
     },
   }),
   columnHelper.display({
@@ -306,7 +243,7 @@ async function getBehaviourNotes(page: number = 1) {
     const res = await pb
       .collection("behavior_notes")
       .getList(page, 200, params);
-    console.log(res);
+
     data.value = res.items;
   } catch (err) {
     console.log(err);

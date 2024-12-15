@@ -2,6 +2,7 @@ package tasks
 
 import (
 	"fmt"
+	"log"
 	"net/mail"
 	"time"
 
@@ -12,6 +13,32 @@ import (
 type DetentionNote struct {
 	BehaviorNote
 	DetenionComplete bool `json:"detention_complete"`
+}
+
+func HandleDetentionReportSend(app *pocketbase.PocketBase) error {
+	mailListRecord, err := app.Dao().FindRecordsByFilter("mail_list", "subs~'behavior'", "", 100, 0)
+
+	if err != nil {
+		return fmt.Errorf("Could not find mail_list records")
+	}
+
+	recipients := []mail.Address{}
+
+	for _, record := range mailListRecord {
+		recipients = append(recipients, mail.Address{Address: record.GetString("email")})
+	}
+
+	notes, err := GetDetentionNotes(app)
+	if err != nil {
+		return fmt.Errorf("Error fetching detention notes: %v", err)
+	}
+
+	if len(notes) > 0 {
+		if err := SendDetentionReport(app, notes); err != nil {
+			log.Printf("Error sending detention report: %v", err)
+		}
+	}
+	return err
 }
 
 func GetDetentionNotes(app *pocketbase.PocketBase) ([]DetentionNote, error) {
@@ -105,7 +132,7 @@ func generateDetentionReportHTML(notes []DetentionNote) string {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detention Notes Report</title>
+    <title>Detention Report</title>
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; background-color: #f9f9f9; color: #333; padding: 20px;">
     <div class="header" style="background-color: #232363; color: white; padding: 20px; text-align: center; border-radius: 8px;">
@@ -151,7 +178,7 @@ func generateDetentionReportHTML(notes []DetentionNote) string {
         </tbody>
     </table>
 
-    <p>Total Outstanding Detentions: %d</p>
+    <p>Total Pending Detentions: %d</p>
 </body>
 </html>
 `, len(notes))
@@ -180,7 +207,7 @@ func SendDetentionReport(app *pocketbase.PocketBase, notes []DetentionNote) erro
 			Name:    app.Settings().Meta.SenderName,
 		},
 		To:      recipients,
-		Subject: fmt.Sprintf("Detention Notes Report - %s", time.Now().Format("2006-01-02")),
+		Subject: fmt.Sprintf("Detention Report - %s", time.Now().Format("2006-01-02")),
 		HTML:    htmlBody,
 	}
 

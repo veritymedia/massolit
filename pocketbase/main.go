@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/mail"
 	"net/url"
 	"os"
 	"time"
@@ -48,21 +47,10 @@ func main() {
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		scheduler := cron.New()
 
-		// Add a job to send detention reports daily at 8 AM
-		scheduler.MustAdd("sendReport", "0 8 * * *", func() {
-			// Fetch outstanding detention notes
-			notes, err := tasks.GetDetentionNotes(app)
-			if err != nil {
-				log.Printf("Error fetching detention notes: %v", err)
-				return
-			}
+		// Send detention reports daily at 8 AM
+		scheduler.MustAdd("sendDetentionReport", "0 13 * * 1-5", func() {
+			_ = tasks.HandleDetentionReportSend(app)
 
-			// If there are outstanding detentions, send report
-			if len(notes) > 0 {
-				if err := tasks.SendDetentionReport(app, notes); err != nil {
-					log.Printf("Error sending detention report: %v", err)
-				}
-			}
 		})
 
 		if err != nil {
@@ -119,33 +107,15 @@ func main() {
 	})
 
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		e.Router.GET("/test-email", func(c echo.Context) error {
-			fmt.Println("/test-email")
-
-			mailListRecord, err := app.Dao().FindRecordsByFilter("mail_list", "subs~'behavior'", "", 100, 0)
-
-			if err != nil {
-				return fmt.Errorf("Could not find mail_list records")
-			}
-
-			recipients := []mail.Address{}
-
-			for _, record := range mailListRecord {
-				recipients = append(recipients, mail.Address{Address: record.GetString("email")})
-			}
-
-			notes, err := tasks.GetDetentionNotes(app)
-			if err != nil {
-				return fmt.Errorf("Error fetching detention notes: %v", err)
-			}
-
-			if len(notes) > 0 {
-				if err := tasks.SendDetentionReport(app, notes); err != nil {
-					log.Printf("Error sending detention report: %v", err)
-				}
-			}
-			return err
-		})
+		// e.Router.GET("/test-email", func(c echo.Context) error {
+		// 	fmt.Println("/test-email")
+		// 	err := tasks.HandleDetentionReportSend(app)
+		// 	if err != nil {
+		// 		c.HTML(500, "<p>Could not email report</p>")
+		// 	}
+		// 	c.HTML(200, "<p>Report sent.</p>")
+		// 	return nil
+		// })
 
 		e.Router.GET("/homepage-stats", func(e echo.Context) error {
 

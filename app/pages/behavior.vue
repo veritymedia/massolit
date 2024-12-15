@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { columns } from "@/components/behavior/behavior";
-
 definePageMeta({
   middleware: ["not-authed-guard"],
 });
