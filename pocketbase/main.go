@@ -14,6 +14,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v5"
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
@@ -175,17 +176,37 @@ func main() {
 				return fmt.Errorf("Error: %s", err.Error())
 			}
 
-			type BookSummary struct {
+			var behaviorNotes []IdRecord
+
+			err = app.Dao().DB().Select("id").From("behavior_notes").Where(dbx.NewExp("action_complete = False", dbx.Params{})).All(&behaviorNotes)
+
+			if err != nil {
+				fmt.Printf("Error: %s", err.Error())
+			}
+
+			type Library struct {
 				Rentals       int `json:"rentals"`
 				BookInstances int `json:"book_instances"`
 				Books         int `json:"books"`
 			}
-			bookSummary := BookSummary{}
-			bookSummary.Rentals = len(rentalsRecords)
-			bookSummary.Books = len(bookRecords)
-			bookSummary.BookInstances = len(bookInstanceRecords)
 
-			e.JSON(200, bookSummary)
+			type Detentions struct {
+				Pending int `json:"pending"`
+			}
+
+			type HomepageStats struct {
+				Library    Library    `json:"library"`
+				Detentions Detentions `json:"detentions"`
+			}
+			homepageStats := HomepageStats{
+				Library:    Library{},
+				Detentions: Detentions{},
+			}
+			homepageStats.Library.Rentals = len(rentalsRecords)
+			homepageStats.Library.Books = len(bookRecords)
+			homepageStats.Library.BookInstances = len(bookInstanceRecords)
+			homepageStats.Detentions.Pending = len(behaviorNotes)
+			e.JSON(200, homepageStats)
 			return nil
 		})
 

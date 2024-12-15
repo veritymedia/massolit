@@ -5,25 +5,13 @@ definePageMeta({
   middleware: ["not-authed-guard"],
 });
 
+const pb = usePocketbase();
+
 const isLoading = ref(false);
-
-const data = ref<Payment[]>([]);
-
-async function getData(): Promise<Payment[]> {
-  // Fetch data from your API here.
-  return [
-    {
-      id: "728ed52f",
-      amount: 100,
-      status: "pending",
-      email: "m@example.com",
-    },
-  ];
-}
 </script>
 <template>
   <div
-    class="h-screen w-screen background-gradient flex-col justify-between p-6 flex"
+    class="h-screen w-screen background-gradient flex-col justify-start p-5 flex"
   >
     <div
       v-if="isLoading"
@@ -34,16 +22,17 @@ async function getData(): Promise<Payment[]> {
     <AppAlert />
     <div>
       <div class="flex items-center justify-between">
-        <NuxtLink to="/app">
+        <NuxtLink to="/">
           <img
             src="../public/images/logos/massolit-logo.png"
             class="w-24"
             alt=""
           />
         </NuxtLink>
-        <!-- <p class="text-sm">{{ pb.authStore.model?.email }}</p> -->
+        <p class="text-sm">{{ pb.authStore.model?.email }}</p>
       </div>
-      <div class="mt-20">
+      <div>
+        <h2 class="mt-10 mb-5">Detention Tracker</h2>
         <BehaviorDetentionTable />
       </div>
     </div>

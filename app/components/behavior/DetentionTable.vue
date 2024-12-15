@@ -36,7 +36,7 @@ import {
   getSortedRowModel,
   useVueTable,
 } from "@tanstack/vue-table";
-import { type RecordListQueryParams } from "pocketbase";
+import { type RecordListQueryParams, Record } from "pocketbase";
 import { h, ref } from "vue";
 
 export type BehaviorNote = {
@@ -129,15 +129,17 @@ const data2 = ref<BehaviorNote[]>([
 
 const data = ref<BehaviorNote[]>([]);
 
-const setComplete = (id: string) => {
+const toggleComplete = async (id: string) => {
   console.log(`Row with id ${id} set to complete.`);
 
   const row = data.value.find((row) => row.id === id);
   if (row) {
     if (row.action_complete === true) {
-      row.action_complete = false;
+      const res = await setActionCompleteOnRecord(id, false);
+      row.action_complete = res.action_complete;
     } else {
       row.action_complete = true;
+      setActionCompleteOnRecord(id, true);
     }
     console.log("Note ID: ", row.id);
   }
@@ -205,20 +207,24 @@ const columns = [
   }),
   columnHelper.display({
     id: "set_complete",
-    header: () => h("div", { class: "text-" }, "Actions"),
-    cell: ({ row }) => {
+    header: () => h("div", {}, "Actions"),
+    cell: ({ row, getValue }) => {
+      const buttonValue = () => {
+        return row.original["action_complete"] ? "Undo" : "Done";
+      };
+
       return h(
         Button,
         {
           onClick: () => {
-            setComplete(row.original.id);
+            toggleComplete(row.original.id);
           },
           size: "xs",
           variant:
             row.original["action_complete"] === true ? "ghost" : "default",
           class: "text-xs",
         },
-        row.original["action_complete"] ? "Undo" : "Done",
+        buttonValue,
       );
     },
   }),
@@ -290,14 +296,32 @@ const pb = usePocketbase();
 async function getBehaviourNotes(page: number = 1) {
   try {
     const params: RecordListQueryParams = {
-      sort: "-action_complete,next_step_date",
+      sort: "+action_complete,-next_step_date",
     };
 
-    const res = await pb.collection("behavior_notes").getList(page, 20, params);
+    const res = await pb
+      .collection("behavior_notes")
+      .getList(page, 200, params);
     console.log(res);
     data.value = res.items;
   } catch (err) {
     console.log(err);
+  }
+}
+
+async function setActionCompleteOnRecord(
+  recordId: string,
+  actionState: boolean,
+): Promise<Record | undefined> {
+  try {
+    const res = await pb.collection("behavior_notes").update(recordId, {
+      action_complete: actionState,
+    });
+    console.log("record updated: ", res);
+    return res;
+  } catch (err) {
+    console.log(err);
+    return undefined;
   }
 }
 
@@ -378,27 +402,6 @@ onMounted(async () => {
           </TableRow>
         </TableBody>
       </Table>
-    </div>
-
-    <div class="flex items-center justify-end py-4 space-x-2">
-      <!-- <div class="space-x-2">
-        <Button
-          variant="outline"
-          size="sm"
-          :disabled="!table.getCanPreviousPage()"
-          @click="table.previousPage()"
-        >
-          Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          :disabled="!table.getCanNextPage()"
-          @click="table.nextPage()"
-        >
-          Next
-        </Button>
-      </div> -->
     </div>
   </div>
 </template>

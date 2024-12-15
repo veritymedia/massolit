@@ -295,7 +295,7 @@ onMounted(() => {
 
 <template>
   <div
-    class="h-screen w-screen background-gradient flex-col justify-between p-6 flex"
+    class="h-screen w-screen background-gradient flex-col justify-between p-5 flex"
   >
     <div
       v-if="isLoading"
