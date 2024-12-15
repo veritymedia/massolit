@@ -8,7 +8,7 @@
 
 # Massolit - Managebac Extension
 
-> **This app is entirely separate from ManageBac and is not an official product.**
+> **Massolit is entirely separate from ManageBac and is not affiliated with them at all.**
 
 This little project was made to scratch my own itch, your milage may vary.
 
@@ -40,6 +40,15 @@ Behaviour note types must include the word `Detention` to be detected.
 Emails are sent at 13:00 every work day. Currently, this is hardcoded and not configurable.
 
 # Production
+
+## Env Variables
+
+The executable will look for a .env in the same dir as it.
+The essential key is `MANAGEBAC_API`. This key must have appropriate permissions: list all notes and list all students.
+
+## Setup Email
+
+Register for an SMPT service and pop those details using the admin site that pocketbase provides.
 
 ## Build
 
