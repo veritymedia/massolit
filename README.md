@@ -1,32 +1,59 @@
 <div align="center">
 <img
     width=100%
-    src="massolit-logo.png"
+    src="banner.png"
     alt="massolit banner"
 />
 </div>
 
-## [Quick Demo](https://pocketnuxt.williamson.ninja/auth/login)
+# Massolit - Managebac Extension
 
-This demo allows you to login and see pocketnuxt in action. This is hosted on a small droplet in DigitalOcean using systemctl.
+> **This app is entirely separate from ManageBac and is not an official product.**
 
-# Pocket Nuxt
+This little project was made to scratch my own itch, your milage may vary.
 
-Nuxt3 and PocketBase delivered in a simple binary that can run anywhere.
+**While the app is being used in the real world, it's internal tests are, lets say, lacking.**
 
-This is achieved by compiling the Nuxt app into a static hosted folder and then using Go to serve the static files and pocketbase api.
+# Features
 
-```go
-//go:embed all:.output/public
-var public embed.FS
+## Book Tracker
+
+Massolit is able to keep track of which books are borrowed by which student.
+
+Currently, it only works if with QR codes which must be generated with a specially formatted code.
+
+```
+MASSOLIT|1|12345678|IG-PSYCH-20
+MASSOLIT|<version>|<isbn>|<unique book id>
 ```
 
-Make it your own by extending [Pocketbase](https://pocketbase.io/docs/) and adding your app to the app folder.
+Upon scanning, Massolit tries to find the book and the book instance. If it does not exist, it will add it to the database.
 
-## Stack
+Best effort is made to fetch the title and cover image of the provided ISBN.
 
-- PocketBase
-- Nuxt3
+## Detention Tracker
+
+Massolit also keeps track of ManageBac behaviour notes and sends daily email reports with students who have detention that day.
+
+Behaviour note types must include the word `Detention` to be detected.
+
+Emails are sent at 13:00 every work day. Currently, this is hardcoded and not configurable.
+
+# Production
+
+## Build
+
+As this project is written in Go with the webapp embedded, it builds to a single executable. This can be run anywhere.
+
+### Docker
+
+No docker image is provided, but it would be trivial to do this <- Recommended
+
+## Deploy
+
+This one is up to you. Interal servers or a service like Hetzner are both good choices.
+
+# Developing and Contributing
 
 ## Run Locally
 
@@ -35,25 +62,27 @@ This will run both a Nuxt3 dev server with hot reload and a pocketbase instance 
 Clone the project
 
 ```bash
-  git clone https://github.com/j-wil/pocket-nuxt
+  git clone https://github.com/veritymedia/massolit
 ```
 
 Go to the project directory
 
 ```bash
-  cd pocket-nuxt
+  cd massolit
 ```
 
 Install dependencies
 
 ```bash
-  yarn install
+  pnpm install
 ```
 
 Start the server
 
 ```bash
-  yarn dev
+  pnpm dev // starts full app
+  # pnpm dev:nuxt // only starts frontend
+  # pnpm dev:pocketbase // only starts backend
 ```
 
 | URL                 | Function                       |
@@ -81,3 +110,4 @@ https://pocketbase.io/docs/going-to-production/ for more examples.
 ## Acknowledgements
 
 - [PocketBase](https://github.com/pocketbase/pocketbase)
+- [PocketNuxt](https://github.com/j-wil/pocket-nuxt)
