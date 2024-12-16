@@ -71,11 +71,12 @@ func main() {
 
 				if err != nil {
 					fmt.Println("CRON::BEHAVIOUR_NOTES Error: Could not fetch latest edit time")
+					break
 				}
 
 				if len(modifiedSinceRecord) == 0 {
 					fmt.Println("CRON::BEHAVIOUR_NOTES Error: Could not fetch, length 0")
-
+					break
 				}
 
 				var modifiedSinceValue string = modifiedSinceRecord[0].GetString("value")

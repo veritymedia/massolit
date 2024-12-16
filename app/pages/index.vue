@@ -110,7 +110,9 @@ onMounted(async () => {
               <span
                 v-if="stats.detentions.pending !== 0"
                 class="text-3xl font-bold text-foreground"
-                >{{ stats.detentions.pending }}</span
+                >{{
+                  stats.detentions.pending ? stats.detentions.pending : 0
+                }}</span
               >
               {{ stats.detentions.pending === 1 ? "Detention" : "Dententions" }}
             </div>
