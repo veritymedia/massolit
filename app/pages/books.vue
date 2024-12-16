@@ -253,21 +253,21 @@ async function handleQrResult(result: string) {
     bookStatus.value = bookStatusModel;
 
     if (bookStatusModel.isRented) {
-      await navigateTo("/app/rented-by");
+      await navigateTo("/books/rented-by");
       return;
     }
 
     if (bookStatusModel.codeExists) {
-      await navigateTo("/app/rent-out");
+      await navigateTo("/books/rent-out");
       return;
     }
 
     if (bookStatusModel.bookExists) {
-      await navigateTo("/app/add-code");
+      await navigateTo("/books/add-code");
       return;
     }
 
-    await navigateTo("/app/add-book");
+    await navigateTo("/books/add-book");
 
     console.log("BOOK STATUS: ", bookStatusModel);
   } catch (error) {
@@ -312,7 +312,7 @@ onMounted(() => {
         <p class="text-sm">{{ pb.authStore.model?.email }}</p>
       </div>
       <div class="mt-20">
-        <div v-if="route.name === 'app'">
+        <div v-if="route.name === 'books'">
           <StudentBooks />
         </div>
         <NuxtPage v-else :rentedBookStatus="bookStatus" :key="scannedBookId" />

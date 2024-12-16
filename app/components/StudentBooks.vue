@@ -46,7 +46,6 @@ let timeout: any = null;
 const handleInput = () => {
   clearTimeout(timeout);
   timeout = setTimeout(async () => {
-    // studentListOpen.value = true;
     console.log(studentSearchTerm.value);
     await searchManagebacStudents();
   }, 750);
@@ -195,7 +194,7 @@ function dateToLocaleString(date: string): string {
       </div>
       <Card
         v-if="studentList.length !== 0 && studentSearchTerm.length !== 0"
-        class="mt-2 absolute top-10 bg-background z-50 border-primary w-full overflow-scroll"
+        class="mt-2 absolute top-10 bg-background z-50 border-primary w-full overflow-hidden"
       >
         <ul class="flex flex-col">
           <li
@@ -205,6 +204,9 @@ function dateToLocaleString(date: string): string {
             :key="student.id"
           >
             {{ student.first_name }} {{ student.last_name }}
+            <span class="text-xs pl-2 uppercase font-semibold text-[gray]"
+              >{{ student.class_grade }}
+            </span>
           </li>
         </ul>
       </Card>
