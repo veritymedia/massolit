@@ -54,7 +54,6 @@ onMounted(async () => {
     </div>
 
     <div class="w-full lg:w-auto flex flex-col gap-3 mt-20">
-      <!-- <h1>Services</h1> -->
       <div class="flex w-full flex-col lg:flex-row gap-2">
         <Card class="p-4 flex flex-col gap-4 lg:gap-8">
           <div class="flex gap-4 items-center">
@@ -64,35 +63,29 @@ onMounted(async () => {
 
           <div class="flex w-full justify-center gap-4 text-[gray]">
             <div class="flex flex-col gap items-center justify-center">
-              <span
-                v-if="stats.library.books !== 0"
-                class="text-3xl font-bold text-foreground"
-                >{{ stats.library.books }}</span
-              >
+              <span class="text-3xl font-bold text-foreground">{{
+                stats.library.books ? stats.library.books : 0
+              }}</span>
               Books
             </div>
 
             <div class="flex flex-col gap items-center justify-center">
-              <span
-                v-if="stats.library.book_instances !== 0"
-                class="text-3xl font-bold text-foreground"
-                >{{ stats.library.book_instances }}</span
-              >
+              <span class="text-3xl font-bold text-foreground">{{
+                stats.library.book_instances ? stats.library.book_instances : 0
+              }}</span>
               Copies
             </div>
 
             <div class="flex flex-col gap items-center justify-center">
-              <span
-                v-if="stats.library.rentals !== 0"
-                class="text-3xl font-bold text-foreground"
-                >{{ stats.library.rentals }}</span
-              >
+              <span class="text-3xl font-bold text-foreground">{{
+                stats.library.rentals ? stats.library.rentals : 0
+              }}</span>
               Rented
             </div>
           </div>
 
           <div>
-            <NuxtLink to="/app">
+            <NuxtLink to="/books">
               <Button class="w-full">See all books</Button>
             </NuxtLink>
           </div>
@@ -107,13 +100,9 @@ onMounted(async () => {
           </div>
           <div class="flex w-full justify-center gap-4 text-[gray]">
             <div class="flex flex-col gap items-center justify-center">
-              <span
-                v-if="stats.detentions.pending !== 0"
-                class="text-3xl font-bold text-foreground"
-                >{{
-                  stats.detentions.pending ? stats.detentions.pending : 0
-                }}</span
-              >
+              <span class="text-3xl font-bold text-foreground">{{
+                stats.detentions.pending ? stats.detentions.pending : 0
+              }}</span>
               {{ stats.detentions.pending === 1 ? "Detention" : "Dententions" }}
             </div>
           </div>
