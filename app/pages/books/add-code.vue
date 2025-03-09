@@ -58,7 +58,7 @@ async function handleAddBookInstance() {
     const res = await pb.collection("book_instances").create(data);
     console.log(res);
 
-    await navigateTo("/app/rent-out");
+    await navigateTo("/books/rent-out");
   } catch (err) {
     console.log(err);
   } finally {
@@ -68,7 +68,7 @@ async function handleAddBookInstance() {
 
 onMounted(async () => {
   if (!props.rentedBookStatus.bookExists) {
-    await navigateTo("/app");
+    await navigateTo("/books");
   }
 });
 </script>

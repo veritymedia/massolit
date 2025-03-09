@@ -66,7 +66,6 @@ func main() {
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		go func() {
 			for {
-
 				modifiedSinceRecord, err := e.App.Dao().FindRecordsByFilter("config", "name='last_behavior_sync_datetime'", "", 1, 0)
 
 				if err != nil {

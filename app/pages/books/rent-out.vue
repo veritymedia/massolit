@@ -158,7 +158,7 @@ async function handleBookLease() {
     const res = await pb.collection("rentals").create(data);
     console.log(res);
     if (res.id) {
-      await navigateTo("/app");
+      await navigateTo("/books");
     }
   } catch (err) {}
 }
@@ -171,7 +171,7 @@ const { isOpen: bookRentModal, closeDialog, openDialog } = useDialogState();
 
 onMounted(async () => {
   if (!props.rentedBookStatus.codeExists) {
-    await navigateTo("/app");
+    await navigateTo("/books");
   }
   // openDialog();
 });

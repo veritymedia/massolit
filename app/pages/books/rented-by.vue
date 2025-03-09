@@ -75,7 +75,7 @@ async function handleBookReturn() {
 
     const recordDeleted = await pb.collection("rentals").delete(rental.id);
     if (recordDeleted) {
-      await navigateTo("/app");
+      await navigateTo("/books");
     }
   } catch (err) {
     console.log(err);
@@ -141,7 +141,7 @@ onMounted(async () => {
     !props.rentedBookStatus.bookId ||
     !props.rentedBookStatus.book?.isbn
   ) {
-    await navigateTo("/app");
+    await navigateTo("/books");
   }
   if (props.rentedBookStatus.rental?.managebac_user_id) {
     await getManagebacUser(props.rentedBookStatus.rental.managebac_user_id);

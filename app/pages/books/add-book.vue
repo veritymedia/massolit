@@ -98,7 +98,7 @@ async function addBookToDatabase() {
       const record = await pb.collection("books").create(data);
       console.log(record);
       await navigateTo(
-        `/app?code=${props.rentedBookStatus.parsedCode.rawCode}`,
+        `/books?code=${props.rentedBookStatus.parsedCode.rawCode}`,
       );
       return;
     } else {
@@ -122,7 +122,7 @@ async function addBookToDatabase() {
     console.log(err);
     return;
   } finally {
-    await navigateTo("/app");
+    await navigateTo("/books");
   }
 }
 
