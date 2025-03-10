@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -17,7 +18,9 @@ import (
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/plugins/migratecmd"
 	"github.com/pocketbase/pocketbase/tools/cron"
+	_ "github.com/veritymedia/massolit/migrations"
 	"github.com/veritymedia/massolit/pocketbase/tasks"
 )
 
@@ -33,10 +36,20 @@ var public embed.FS
 func main() {
 	app := pocketbase.New()
 
+	// loosely check if it was executed using "go run"
+	isGoRun := strings.HasPrefix(os.Args[0], os.TempDir())
+
+	migratecmd.MustRegister(app, app.RootCmd, migratecmd.Config{
+		// enable auto creation of migration files when making collection changes in the Dashboard
+		// (the isGoRun check is to enable it only during development)
+		Automigrate: isGoRun,
+	})
+
 	err := godotenv.Load()
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("Warning: .env file not found, using environment variables from Docker")
 	}
+
 	managebacUrl := "https://api.managebac.com/v2"
 	managebacApiKey := os.Getenv("MANAGEBAC_API")
 
@@ -47,19 +60,13 @@ func main() {
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		scheduler := cron.New()
 
-		// Send detention reports daily at 8 AM
-		scheduler.MustAdd("sendDetentionReport", "0 13 * * 1-5", func() {
+		err := scheduler.Add("sendDetentionReport", "0 13 * * 1-5", func() {
 			_ = tasks.HandleDetentionReportSend(app)
-
 		})
-
 		if err != nil {
 			return fmt.Errorf("failed to add detention report cron job: %v", err)
 		}
-
-		// Start the scheduler
 		scheduler.Start()
-
 		return nil
 	})
 
