@@ -120,6 +120,17 @@ const columns = [
     },
   }),
   columnHelper.display({
+    id: "reported_by",
+    header: () => h("div", { class: " left-right" }, "Reported By"),
+    cell: ({ row }) => {
+      return h(
+        "div",
+        { class: "text-left font-medium" },
+        row.original["reported_by"],
+      );
+    },
+  }),
+  columnHelper.display({
     id: "full_name",
     header: () => h("div", { class: " left-right" }, "Full Name"),
     cell: ({ row }) => {
@@ -147,8 +158,19 @@ const columns = [
     },
   }),
   columnHelper.display({
+    id: "next_step",
+    header: () => h("div", { class: " left-right" }, "Next Step"),
+    cell: ({ row }) => {
+      return h(
+        "div",
+        { class: "text-left font-medium" },
+        row.original["next_step"],
+      );
+    },
+  }),
+  columnHelper.display({
     id: "set_complete",
-    header: () => h("div", {}, "Actions"),
+    header: () => h("div", {}, "Steps Complete"),
     cell: ({ row, getValue }) => {
       const buttonValue = () => {
         return row.original["action_complete"] ? "Undo" : "Done";
