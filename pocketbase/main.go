@@ -60,7 +60,7 @@ func main() {
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		scheduler := cron.New()
 
-		err := scheduler.Add("sendDetentionReport", "0 13 * * 1-5", func() {
+		err := scheduler.Add("sendDetentionReport", "0 12 * * 1-5", func() {
 			_ = tasks.HandleDetentionReportSend(app)
 		})
 		if err != nil {
