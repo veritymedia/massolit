@@ -37,10 +37,10 @@ WORKDIR /app
 COPY --from=builder /app/massolit .
 
 # Ensure correct permissions
-RUN chown -R massolit:massolit /app
+# RUN chown -R massolit:massolit /app
 
 # Use the non-root user
-USER massolit
+# USER massolit
 
 # Expose the port the app runs on
 EXPOSE 8090

@@ -1,0 +1,13 @@
+services:
+  massolit:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - massolit_data:/app/pb_data
+    environment:
+      MANAGEBAC_API: ${MANAGEBAC_API}
+    ports:
+      - 8090:8090
+volumes:
+  massolit_data:
