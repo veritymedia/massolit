@@ -59,7 +59,7 @@ onMounted(async () => {
 
     <div class="w-full lg:w-auto flex flex-col gap-3 mt-20">
       <div class="flex w-full flex-col lg:flex-row gap-2">
-        <Card class="p-4 flex flex-col gap-4 lg:gap-8">
+        <Card class="p-6 md:p-10 flex md:gap-10 flex-col gap-4">
           <div class="flex gap-4 items-center">
             <ServiceBookTrackerIcon />
             <h2>Book Tracker</h2>
@@ -96,7 +96,7 @@ onMounted(async () => {
         </Card>
 
         <Card
-          class="flex flex-col w-full p-4 gap-4 justify-between items-center"
+          class="flex flex-col w-full p-6 md:p-10 gap-4 md:gap-10 justify-between items-center"
         >
           <div class="flex gap-4 w-full items-center">
             <ServiceDetentionsIcon />

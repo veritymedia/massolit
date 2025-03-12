@@ -53,12 +53,6 @@ function parseCode(code: string): MassolitCode {
     throw new Error("Invalid code format: version number not a number");
   }
 
-  // const parsedIntISBN = parseInt(s[3]);
-
-  // if (isNaN(parsedIntISBN)) {
-  //   throw new Error("Invalid code format: version is NaN");
-  // }
-
   switch (parsedIntVersion) {
     case 1:
       massolitObject.id = s[2];
