@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Timetable } from "~/components/timetabler/TimetableList.vue";
+import { Timetable } from "~/components/timetabler/TimetableList.vue";
 import TimetableList from "~/components/timetabler/TimetableList.vue";
 // const isLoading = ref(false);
 
@@ -21,7 +21,7 @@ async function createTimetable() {
   }
 }
 
-const newTimetable = ref({
+const newTimetable = ref<Timetable>({
   id: "",
   name: "",
   exam_timetable: [],

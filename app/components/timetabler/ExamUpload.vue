@@ -43,6 +43,24 @@
       </Button>
     </div>
 
+    <div v-if="parsedData.length">
+      <div class="flex w-auto">
+        Exam Board
+        <Input class="w-64" v-model="exam_board"></Input>
+      </div>
+
+      <div class="flex w-auto">
+        Qualification
+        <Input class="w-64" v-model="qualification"></Input>
+      </div>
+
+      <div class="flex w-auto">
+        Session
+        <Input class="w-64" v-model="session"></Input>
+      </div>
+      <div v-if="error" class="mt-2 text-red-500">{{ error }}</div>
+    </div>
+
     <div v-if="parsedData.length > 0" class="mb-6">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-semibold">
@@ -52,7 +70,7 @@
           <Button variant="secondary" @click="startAddNewRow"
             >Create New Exam</Button
           >
-          <Button @click="emitParsedContent">Continue</Button>
+          <Button @click="emitParsedContent">Save</Button>
         </div>
       </div>
 
@@ -236,11 +254,41 @@ import Papa from "papaparse";
 import Fuse from "fuse.js";
 
 // Emits
-const emit = defineEmits(["status:created"]);
-function emitParsedContent() {
-  emit("status:created", parsedData.value);
-}
+const emit = defineEmits(["exams:add"]);
 
+// The new refs for user inputs
+const exam_board = ref("");
+const qualification = ref("");
+const session = ref("");
+
+const allowedQualifications = ["iGCSE", "GCSE", "iAL", "AL"];
+
+function emitParsedContent() {
+  // Clear errors before checking
+  error.value = "";
+
+  // Trimmed values
+  const ex = exam_board.value.trim();
+  const qu = qualification.value.trim();
+  const se = session.value.trim();
+
+  if (!ex || !qu || !se) {
+    error.value = "Please fill in all fields.";
+    return;
+  }
+  if (!allowedQualifications.includes(qu)) {
+    error.value = "Qualification must be one of: iGCSE, GCSE, iAL, AL";
+    return;
+  }
+
+  emit("exams:add", {
+    data: parsedData.value,
+    exam_board: ex,
+    qualification: qu,
+    session: se,
+  });
+  // Optionally clear error or form fields here
+}
 // Props
 const props = defineProps({
   config: {
