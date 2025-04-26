@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { Timetable } from "~/components/timetabler/TimetableList.vue";
+import { type Timetable } from "~/components/timetabler/TimetableList.vue";
 import TimetableList from "~/components/timetabler/TimetableList.vue";
 // const isLoading = ref(false);
 
@@ -40,7 +40,7 @@ const newTimetable = ref<Timetable>({
     </div>
     <AppAlert />
     <div>
-      <div class="flex items-baseline gap-2">
+      <div class="flex items-baseline justify-between gap-2">
         <h2 class="mt-10 mb-5">Exam Timetables</h2>
         <Button @click="createTimetable">New Timetable</Button>
       </div>

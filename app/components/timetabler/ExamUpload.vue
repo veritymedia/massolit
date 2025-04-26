@@ -19,7 +19,7 @@
       </p>
     </div>
 
-    <div class="flex flex-col gap-2" v-if="parsedData.length">
+    <div class="flex flex-col gap-2">
       <div class="flex items-end gap-2 mb-5">
         <div class="flex flex-col w-auto">
           Exam Board
@@ -43,10 +43,7 @@
         </div>
       </div>
     </div>
-    <div
-      v-if="parsedData.length > 0"
-      class="flex items-baseline mb-3 space-x-4"
-    >
+    <div class="flex items-baseline mb-3 space-x-4">
       <Input
         v-model="searchTerm"
         type="text"
@@ -62,7 +59,7 @@
         Delete Selected ({{ selectedRowIds.size }})
       </Button>
     </div>
-    <div v-if="parsedData.length > 0" class="mb-6">
+    <div v-if="parsedData.length > -1" class="mb-6">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-semibold">
           Parsed Data ({{ parsedData.length }})

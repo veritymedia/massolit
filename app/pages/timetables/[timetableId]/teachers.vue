@@ -278,9 +278,13 @@ function removeSubject(idx: number) {
 })();
 </script>
 <template>
-  <div class="container mx-auto mt-10 bg-white rounded shadow">
-    <h2 class="mb-6 text-2xl font-bold">Teacher Management</h2>
-    <NuxtLink to="/timetables">Back</NuxtLink>
+  <div class="flex flex-col gap-5 mt-10 bg-white">
+    <div class="flex gap-2">
+      <NuxtLink to="/timetables"
+        ><Icon class="size-6" name="material-symbols:arrow-left-alt-rounded"
+      /></NuxtLink>
+      <h2>Manage Teachers</h2>
+    </div>
     <div class="flex flex-col gap-6 md:flex-row">
       <!-- Teacher List -->
       <Card class="flex flex-col justify-between p-4 w-72">
@@ -364,6 +368,11 @@ function removeSubject(idx: number) {
                 <tbody>
                   <tr v-for="(period, pIdx) in SCHEDULE" :key="pIdx">
                     <td
+                      :class="
+                        period.type === 'break' || period.type === 'lunch'
+                          ? 'bg-muted'
+                          : ''
+                      "
                       class="p-2 font-semibold bg-gray-100 border border-primary whitespace-nowrap"
                     >
                       <span
@@ -371,7 +380,7 @@ function removeSubject(idx: number) {
                           period.type === 'lesson'
                             ? 'text-blue-700'
                             : period.type === 'break'
-                            ? 'text-orange-600'
+                            ? ''
                             : 'text-green-700'
                         "
                       >
@@ -384,14 +393,19 @@ function removeSubject(idx: number) {
                     <td
                       v-for="dayIdx in [0, 1, 2, 3, 4]"
                       :key="dayIdx"
+                      :class="
+                        period.type === 'break' || period.type === 'lunch'
+                          ? 'bg-muted'
+                          : ''
+                      "
                       class="relative p-2 text-center border border-primary"
                     >
                       <button
                         :class="[
                           'w-8 h-8 rounded-full flex items-center justify-center mx-auto transition',
                           timetableMatrix[slotKey(dayIdx, pIdx)]
-                            ? 'bg-blue-500 text-white shadow-lg'
-                            : 'bg-white border text-gray-400 hover:border-primary',
+                            ? 'bg-blue-500 text-foreground bg-primary shadow-lg'
+                            : 'bg-transparent border text-foreground hover:bg-primary hover:opacity-50 border-primary',
                         ]"
                         @click="toggleSlot(dayIdx, pIdx)"
                         title="Click to toggle lesson"
@@ -405,7 +419,7 @@ function removeSubject(idx: number) {
                 </tbody>
               </table>
             </div>
-            <Button @click="saveTeacherTimetable">
+            <Button class="mt-5" @click="saveTeacherTimetable">
               Save Timetable & Availability
             </Button>
           </div>

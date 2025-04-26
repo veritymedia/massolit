@@ -1,12 +1,17 @@
 <template>
-  <div class="container mt-10 bg-white">
-    <h2>Exams</h2>
+  <div class="flex flex-col gap-5 mt-10 bg-white">
+    <div class="flex gap-2">
+      <NuxtLink to="/timetables"
+        ><Icon class="size-6" name="material-symbols:arrow-left-alt-rounded"
+      /></NuxtLink>
+      <h2>Exams</h2>
+    </div>
 
     <div v-if="timetable" class="flex gap-2">
       <Card
         v-for="t in timetable.expand.exam_timetables"
         :key="t.id"
-        class="flex flex-col w-auto gap-2 p-2"
+        class="flex flex-col w-auto gap-2 p-4"
       >
         <div>
           <div>{{ t.exam_board }} {{ t.qualification }} {{ t.session }}</div>

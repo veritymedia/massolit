@@ -28,9 +28,15 @@
           <Button variant="outline"
             ><Icon class="size-5" name="material-symbols:rotate-left-rounded"
           /></Button>
+          <Button variant="destructive" @click="deleteTimetable(t.id)"
+            ><Icon name="material-symbols:delete-outline"
+          /></Button>
         </div>
-        <div class="w-full" v-else>
+        <div class="flex w-full gap-2" v-else>
           <Button variant="secondary" class="w-full">Calculate</Button>
+          <Button variant="destructive" @click="deleteTimetable(t.id)"
+            ><Icon name="material-symbols:delete-outline"
+          /></Button>
         </div>
       </Card>
     </ul>
@@ -76,6 +82,16 @@ async function getTimetables() {
     console.log(records);
   } catch (err) {
     console.log(err);
+  }
+}
+
+async function deleteTimetable(id: string) {
+  try {
+    await pb.collection("timetables").delete(id);
+  } catch (err) {
+    console.log(err);
+  } finally {
+    getTimetables();
   }
 }
 
