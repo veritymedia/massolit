@@ -24,8 +24,10 @@
           >
         </div>
         <div v-if="t.timetable.length > 0" class="flex gap-2">
-          <Button class="w-full">View Timetable</Button>
-          <Button variant="outline"
+          <Button @click="navigateTo(`/timetables/${t.id}`)" class="w-full"
+            >View Timetable</Button
+          >
+          <Button @click="calculateTimetable(t.id)" variant="outline"
             ><Icon class="size-5" name="material-symbols:rotate-left-rounded"
           /></Button>
           <Button variant="destructive" @click="deleteTimetable(t.id)"
@@ -33,7 +35,12 @@
           /></Button>
         </div>
         <div class="flex w-full gap-2" v-else>
-          <Button variant="secondary" class="w-full">Calculate</Button>
+          <Button
+            @click="calculateTimetable(t.id)"
+            variant="secondary"
+            class="w-full"
+            >Calculate</Button
+          >
           <Button variant="destructive" @click="deleteTimetable(t.id)"
             ><Icon name="material-symbols:delete-outline"
           /></Button>
@@ -43,6 +50,8 @@
   </div>
 </template>
 <script setup lang="ts">
+import { type TeacherRaw, Teacher, Exam, type ExamRaw } from "timetabler";
+import { processExams } from "timetabler";
 const pb = usePocketbase();
 
 interface Props {
@@ -70,6 +79,46 @@ watch(
     }
   }
 );
+
+async function calculateTimetable(id: string) {
+  try {
+    const timetable = await pb.collection("timetables").getOne(id, {
+      expand: "teachers,exam_timetables",
+    });
+    let examsRaw: ExamRaw[] = [];
+
+    timetable.expand.exam_timetables.forEach((list: any) => {
+      examsRaw = examsRaw.concat(list.data);
+    });
+
+    const exams = examsRaw.map((exam) => {
+      return new Exam(exam);
+    });
+    // console.log("TM: ", timetable.expand.exam_timetables);
+    console.log("TIMETABLE: ", timetable.expand.teachers);
+
+    const teachers: Teacher[] = timetable.expand.teachers.map(
+      (teacher: TeacherRaw) => {
+        return new Teacher({
+          name: teacher.name,
+          availabilities: teacher.availabilities,
+          subjects: teacher.subjects,
+        });
+      }
+    );
+
+    const finalTimetable = processExams(exams, teachers);
+    console.log("FINAL: ", finalTimetable);
+
+    const saved = await pb.collection("timetables").update(id, {
+      timetable: finalTimetable,
+    });
+    console.log(saved);
+    return navigateTo(`/timetables/${id}`);
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 async function getTimetables() {
   try {
@@ -100,21 +149,4 @@ onMounted(async () => {
 });
 
 const timetables = ref();
-
-const tbls = ref([
-  {
-    id: "some",
-    name: "Exam Empty",
-    exam_timetable: [],
-    teachers: [],
-    timetable: [],
-  },
-  {
-    id: "two",
-    name: "Exam Complete",
-    exam_timetable: [{ exam_board: "board" }],
-    teachers: [],
-    timetable: [{ name: "some" }],
-  },
-]);
 </script>
