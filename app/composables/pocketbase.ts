@@ -1,8 +1,9 @@
-import PocketBase from 'pocketbase'
+import PocketBase from "pocketbase";
 
-const appConfig = useAppConfig()
-const pb = new PocketBase(appConfig.pocketbase.url)
+const appConfig = useAppConfig();
+const pb = new PocketBase(appConfig.pocketbase.url);
+pb.autoCancellation(false);
 
 export const usePocketbase = () => {
-    return pb
-}
+  return pb;
+};

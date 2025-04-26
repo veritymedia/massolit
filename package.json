@@ -13,6 +13,7 @@
   "devDependencies": {
     "@nuxt/icon": "^1.5.6",
     "@nuxtjs/tailwindcss": "^6.12.1",
+    "@types/papaparse": "^5.3.15",
     "@vueuse/core": "^11.1.0",
     "@vueuse/nuxt": "^11.1.0",
     "autoprefixer": "^10.4.20",
@@ -28,12 +29,18 @@
     "clsx": "^2.1.1",
     "dompurify": "^3.2.3",
     "dotenv": "^16.4.5",
+    "fuse.js": "^7.1.0",
     "html5-qrcode": "^2.3.8",
+    "papaparse": "^5.5.2",
     "pocketbase": "^0.9.1",
     "radix-vue": "^1.9.7",
     "shadcn-nuxt": "^0.10.4",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
+    "timetabler": "^0.6.0",
     "typescript": "^5.6.3"
+  },
+  "pnpm": {
+    "overrides": {}
   }
 }
