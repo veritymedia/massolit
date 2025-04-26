@@ -4,6 +4,7 @@ const pb = usePocketbase();
 const route = useRoute();
 
 const timetableState = ref();
+const isLoading = ref(true);
 
 async function getTimetable() {
   const id = route.params.timetableId as string;
@@ -12,6 +13,7 @@ async function getTimetable() {
     const tb = await pb.collection("timetables").getOne(id);
     console.log(tb);
     timetableState.value = tb.timetable;
+    isLoading.value = false;
   } catch (error) {
     console.log(error);
   }
@@ -30,8 +32,7 @@ onMounted(async () => {
       /></NuxtLink>
       <h2>Timetable</h2>
     </div>
-    <div>SOME {{ $route.params.timetableId }}</div>
-    <DisplayTimetable />
+    <DisplayTimetable :loading="isLoading" :exams="timetableState" />
   </div>
 </template>
 

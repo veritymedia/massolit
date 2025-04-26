@@ -1,5 +1,5 @@
 <template>
-  <div class="w-screen h-screen rounded-lg shadow-md bg-gray-50">
+  <div class="w-screen h-screen rounded-lg shadow-md">
     <h1 class="mb-6 text-2xl font-bold text-indigo-800">Exam Schedule</h1>
 
     <!-- Loading state -->
@@ -25,7 +25,7 @@
         class="mb-8"
       >
         <div class="flex items-center mb-4">
-          <div class="w-3 h-3 mr-2 bg-indigo-500 rounded-full"></div>
+          <div class="w-3 h-3 mr-2 bg-[purple] rounded-full"></div>
           <h2 class="text-xl font-semibold text-gray-800">
             {{ week.weekLabel }}
           </h2>
@@ -36,7 +36,7 @@
           <div
             v-for="(examGroup, examIndex) in week.examGroups"
             :key="examIndex"
-            class="p-4 transition-shadow duration-200 bg-white border-l-4 rounded-lg shadow-sm hover:shadow-md"
+            class="p-4 transition-shadow duration-200 border-l-4 rounded-lg shadow-sm bg-background hover:shadow-md"
             :class="getBorderClass(examGroup)"
           >
             <!-- Subject(s) and completion badge -->
@@ -245,24 +245,63 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
-import type { Exam, Teacher, BookedSegment } from "timetabler";
+import { ref, computed, onMounted, watch } from "vue";
+
+// Define interfaces based on your existing types
+interface Teacher {
+  id: string;
+  name: string;
+  availabilities: {
+    dow: number;
+    start: string | Date;
+    end: string | Date;
+  }[];
+  subjects: string[];
+  bias: number;
+}
+
+interface BookedSegment {
+  teacher: Teacher;
+  start: string | Date;
+  end: string | Date;
+}
+
+interface Exam {
+  id: string;
+  subject: string;
+  start: string | Date;
+  end: string | Date;
+  duration: number;
+  room: string;
+  bookedSegments: BookedSegment[];
+  complete: boolean;
+  dow: number;
+}
 
 // Props and emits
 const props = defineProps<{
-  // If you want to pass exams as props instead of fetching them
-  initialExams?: Exam[];
+  exams: Exam[];
+  loading?: boolean;
 }>();
 
 // State
-const exams = ref<Exam[]>([]);
-const loading = ref(true);
+const localLoading = ref(props.loading ?? false);
+
+// Watch for prop changes
+watch(
+  () => props.loading,
+  (newVal) => {
+    if (newVal !== undefined) {
+      localLoading.value = newVal;
+    }
+  }
+);
 
 // Interface for grouped exams (merged by room and start time)
 interface ExamGroup {
   exams: Exam[];
   room: string;
-  start: string;
+  start: string | Date;
   showDetails: boolean;
 }
 
@@ -280,7 +319,9 @@ const groupExamsByRoomAndTime = (exams: Exam[]): ExamGroup[] => {
 
   exams.forEach((exam) => {
     // Create a unique key for each room and start time combination
-    const key = `${exam.room}-${exam.start}`;
+    const startString =
+      typeof exam.start === "string" ? exam.start : exam.start.toISOString();
+    const key = `${exam.room}-${startString}`;
 
     if (!groups[key]) {
       groups[key] = {
@@ -299,12 +340,12 @@ const groupExamsByRoomAndTime = (exams: Exam[]): ExamGroup[] => {
 
 // Group exams by week
 const weeklyExams = computed<WeekGroup[]>(() => {
-  if (!exams.value || exams.value.length === 0) return [];
+  if (!props.exams || props.exams.length === 0) return [];
 
   // Group exams by week
   const weeks: Record<string, WeekGroup> = {};
 
-  exams.value.forEach((exam) => {
+  props.exams.forEach((exam) => {
     const examDate = new Date(exam.start);
     // Get week start (Monday)
     const weekStart = new Date(examDate);
@@ -337,7 +378,7 @@ const weeklyExams = computed<WeekGroup[]>(() => {
     const weekEnd = weeks[weekKey].weekEnd;
 
     // Filter exams that fall within this week
-    const weekExams = exams.value.filter((exam) => {
+    const weekExams = props.exams.filter((exam) => {
       const examDate = new Date(exam.start);
       return examDate >= weekStart && examDate <= weekEnd;
     });
@@ -353,114 +394,8 @@ const weeklyExams = computed<WeekGroup[]>(() => {
 });
 
 // Methods
-const fetchExams = () => {
-  // Replace with actual API call
-  setTimeout(() => {
-    // Sample data - normally you would fetch this from an API
-    if (props.initialExams) {
-      exams.value = props.initialExams;
-    } else {
-      exams.value = [
-        {
-          subject: "biology",
-          start: "2024-05-08T07:00:00.000Z",
-          end: "2024-05-08T07:30:00.000Z",
-          duration: 30,
-          room: "Room1",
-          bookedSegments: [
-            {
-              teacher: {
-                id: "75cbc67d-1223-43d6-a69f-d66da7c9ebd1",
-                name: "Simon",
-                availabilities: [
-                  {
-                    dow: 3,
-                    start: "1970-01-01T08:00:00.000Z",
-                    end: "1970-01-01T08:55:00.000Z",
-                  },
-                  {
-                    dow: 3,
-                    start: "1970-01-01T10:10:00.000Z",
-                    end: "1970-01-01T11:05:00.000Z",
-                  },
-                ],
-                subjects: ["english"],
-                bias: 3,
-              },
-              start: "2024-05-08T07:00:00.000Z",
-              end: "2024-05-08T07:30:00.000Z",
-            },
-          ],
-          complete: true,
-          dow: 3,
-        },
-        // Example of exams that would be merged (same room and start time)
-        {
-          subject: "chemistry",
-          start: "2024-05-08T07:00:00.000Z",
-          end: "2024-05-08T07:45:00.000Z",
-          duration: 45,
-          room: "Room1",
-          bookedSegments: [
-            {
-              teacher: {
-                id: "85dbc67d-1223-43d6-a69f-d66da7c9ebd2",
-                name: "Maria",
-                availabilities: [
-                  {
-                    dow: 3,
-                    start: "1970-01-01T07:00:00.000Z",
-                    end: "1970-01-01T09:00:00.000Z",
-                  },
-                ],
-                subjects: ["chemistry"],
-                bias: 2,
-              },
-              start: "2024-05-08T07:00:00.000Z",
-              end: "2024-05-08T07:45:00.000Z",
-            },
-          ],
-          complete: false,
-          dow: 3,
-        },
-        // Different week
-        {
-          subject: "math",
-          start: "2024-05-15T09:00:00.000Z",
-          end: "2024-05-15T10:00:00.000Z",
-          duration: 60,
-          room: "Room2",
-          bookedSegments: [
-            {
-              teacher: {
-                id: "95dbc67d-1223-43d6-a69f-d66da7c9ebd3",
-                name: "John",
-                availabilities: [
-                  {
-                    dow: 3,
-                    start: "1970-01-01T09:00:00.000Z",
-                    end: "1970-01-01T11:00:00.000Z",
-                  },
-                ],
-                subjects: ["math"],
-                bias: 1,
-              },
-              start: "2024-05-15T09:00:00.000Z",
-              end: "2024-05-15T10:00:00.000Z",
-            },
-          ],
-          complete: true,
-          dow: 3,
-        },
-      ];
-      exams.value = solve();
-    }
-    loading.value = false;
-  }, 500);
-};
-
 // Format date (Wed, May 8)
-const formatDate = (dateString: string): string => {
+const formatDate = (dateString: string | Date): string => {
   const date = new Date(dateString);
   const options: Intl.DateTimeFormatOptions = {
     weekday: "short",
@@ -471,7 +406,7 @@ const formatDate = (dateString: string): string => {
 };
 
 // Format time (7:00 AM)
-const formatTime = (dateString: string): string => {
+const formatTime = (dateString: string | Date): string => {
   const date = new Date(dateString);
   return date.toLocaleTimeString("en-US", {
     hour: "2-digit",
@@ -578,9 +513,4 @@ const getAllTeachers = (examGroup: ExamGroup): Teacher[] => {
 
   return teachers;
 };
-
-// Lifecycle hooks
-onMounted(() => {
-  fetchExams();
-});
 </script>
