@@ -258,8 +258,8 @@ const props = defineProps({
   config: {
     type: Object,
     default: () => ({
-      morning: "09:00",
-      afternoon: "14:00",
+      morning: "10:00",
+      afternoon: "12:00",
     }),
   },
 });

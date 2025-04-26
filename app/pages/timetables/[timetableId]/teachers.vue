@@ -340,27 +340,30 @@ function removeSubject(idx: number) {
               <label class="block font-semibold">Teacher Name</label>
               <Input type="text" v-model="teacherName" />
             </div>
-            <div class="flex-1">
+            <div class="flex flex-col">
               <label class="block font-semibold">Subjects</label>
-              <div class="flex flex-wrap items-center gap-2">
+              <div class="items-center gap-2">
                 <Input
+                  class="w-64"
                   type="text"
                   placeholder="Add subject"
                   v-model="subjectInput"
                   @keydown="onSubjectInputKeydown"
                 />
-                <span
-                  @click="removeSubject(i)"
-                  v-for="(subject, i) in teacherSubjects"
-                  :key="subject"
-                  class="flex items-center px-1.5 py-1 pr-3 text-xs font-medium uppercase rounded-full cursor-pointer gap- bg-primary"
-                >
-                  <Icon
-                    class="size-5"
-                    name="material-symbols:close-small-outline-rounded"
-                  />
-                  <p>{{ subject }}</p>
-                </span>
+                <div class="flex flex-wrap gap-2 mt-2 max-w-96">
+                  <div
+                    @click="removeSubject(i)"
+                    v-for="(subject, i) in teacherSubjects"
+                    :key="subject"
+                    class="flex items-center px-1.5 py-1 pr-3 text-xs font-medium uppercase rounded-full cursor-pointer gap- bg-primary"
+                  >
+                    <Icon
+                      class="size-5"
+                      name="material-symbols:close-small-outline-rounded"
+                    />
+                    <p>{{ subject }}</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

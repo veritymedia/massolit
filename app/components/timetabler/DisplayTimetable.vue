@@ -60,7 +60,11 @@
               <div>
                 <!-- <Icon name="material-symbols:delete" /> -->
                 <span class="text-lg font-bold">{{
-                  formatTime(examGroup.exams[0].bookedSegments[0].start)
+                  examGroup.exams.length > 0 &&
+                  examGroup.exams[0].bookedSegments.length > 0 &&
+                  examGroup.exams[0].bookedSegments[0].start
+                    ? formatTime(examGroup.exams[0].bookedSegments[0].start)
+                    : ""
                 }}</span>
               </div>
               <div class="flex flex-col gap-2">
@@ -126,6 +130,15 @@
               v-if="examGroup.showDetails"
               class="pt-3 mt-3 text-sm border-t border-gray-200"
             >
+              <ul>
+                <li v-for="exam in examGroup.exams">
+                  <div v-for="segments in exam.bookedSegments">
+                    {{ formatTime(segments.start) }}-{{
+                      formatTime(segments.end)
+                    }}-{{ segments.teacher.name }}
+                  </div>
+                </li>
+              </ul>
               <!-- Multiple exams info -->
               <div v-if="examGroup.exams.length > 1">
                 <h5 class="mb-2 font-medium">Combined Exams:</h5>
