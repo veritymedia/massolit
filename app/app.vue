@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { Toaster } from "./components/ui/sonner";
 const isDark = useDark();
 const toggleDark = useToggle(isDark);
 
@@ -9,6 +10,8 @@ onMounted(() => {
 
 <template>
   <div class="bg- background-gradient text-foreground">
+    <Toaster />
+
     <NuxtLayout>
       <NuxtLoadingIndicator />
       <NuxtPage />

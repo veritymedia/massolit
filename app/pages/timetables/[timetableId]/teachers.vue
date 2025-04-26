@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, nextTick } from "vue";
 import { useRoute } from "vue-router";
+import { toast } from "vue-sonner";
 
 // Utility types
 type Teacher = {
@@ -206,7 +207,9 @@ async function saveTeacherTimetable() {
     availabilities: availabilityRanges, // or substitute your field name
   });
   allTeachers.value[teacherIdx] = updatedTeacher;
-  alert("Saved!");
+  toast("Teacher saved", {
+    description: "Sunday, December 03, 2023 at 9:00 AM",
+  });
 }
 
 // Add/remove teacher to selection list for timetable
@@ -229,7 +232,7 @@ async function saveSelectedTeachersToTimetable() {
   await pb.collection("timetables").update(timetableId as string, {
     teachers: data,
   });
-  alert("Assigned teachers to timetable.");
+  toast("Assigned teachers to timetable.");
 }
 
 // Add new teacher
@@ -298,18 +301,28 @@ function removeSubject(idx: number) {
               v-for="t in allTeachers"
               :key="t.id"
               :class="[
-                'py-2 flex items-center justify-between cursor-pointer text-sm hover:bg-blue-100 transition border border-transparent p-2 rounded',
+                'py-2 flex items-center justify-between cursor-pointer text-sm hover:bg-muted transition border border-transparent p-2 rounded group',
                 activeTeacherId === t.id ? 'border-primary' : '',
               ]"
             >
-              <div @click="selectTeacher(t)">
+              <!-- Name clickable separately -->
+              <button
+                class="flex-1 text-left focus:outline-none"
+                @click.capture="selectTeacher(t)"
+                type="button"
+              >
                 {{ t.name }}
-              </div>
-              <input
-                type="checkbox"
-                :checked="selectedTeachers.includes(t.id)"
-                @change="selectTeacherForTimetable(t.id)"
-              />
+              </button>
+
+              <!-- Styled Checkbox separately -->
+              <label class="flex items-center ml-4">
+                <input
+                  type="checkbox"
+                  class="w-5 h-5 transition border border-gray-300 rounded-md appearance-none checked:bg-primary checked:border-foreground focus:outline-none"
+                  :checked="selectedTeachers.includes(t.id)"
+                  @change="selectTeacherForTimetable(t.id)"
+                />
+              </label>
             </li>
           </ul>
         </div>
@@ -340,8 +353,12 @@ function removeSubject(idx: number) {
                   @click="removeSubject(i)"
                   v-for="(subject, i) in teacherSubjects"
                   :key="subject"
-                  class="flex items-center gap-1 px-2 py-1 text-xs font-medium uppercase rounded-full cursor-pointer bg-primary"
+                  class="flex items-center px-1.5 py-1 pr-3 text-xs font-medium uppercase rounded-full cursor-pointer gap- bg-primary"
                 >
+                  <Icon
+                    class="size-5"
+                    name="material-symbols:close-small-outline-rounded"
+                  />
                   <p>{{ subject }}</p>
                 </span>
               </div>
@@ -355,11 +372,11 @@ function removeSubject(idx: number) {
               >
                 <thead>
                   <tr>
-                    <th class="p-2 bg-gray-200 border border-primary"></th>
+                    <th class="p-2 border border-primary"></th>
                     <th
                       v-for="(day, d) in DAYS"
                       :key="d"
-                      class="p-2 bg-gray-200 border border-primary"
+                      class="p-2 border border-primary"
                     >
                       {{ day }}
                     </th>
@@ -373,17 +390,9 @@ function removeSubject(idx: number) {
                           ? 'bg-muted'
                           : ''
                       "
-                      class="p-2 font-semibold bg-gray-100 border border-primary whitespace-nowrap"
+                      class="p-2 font-semibold border border-primary whitespace-nowrap"
                     >
-                      <span
-                        :class="
-                          period.type === 'lesson'
-                            ? 'text-blue-700'
-                            : period.type === 'break'
-                            ? ''
-                            : 'text-green-700'
-                        "
-                      >
+                      <span class="text-foreground">
                         {{ period.label }}
                       </span>
                       <div class="text-xs text-gray-500">
@@ -404,7 +413,7 @@ function removeSubject(idx: number) {
                         :class="[
                           'w-8 h-8 rounded-full flex items-center justify-center mx-auto transition',
                           timetableMatrix[slotKey(dayIdx, pIdx)]
-                            ? 'bg-blue-500 text-foreground bg-primary shadow-lg'
+                            ? 'text-foreground bg-primary shadow-lg'
                             : 'bg-transparent border text-foreground hover:bg-primary hover:opacity-50 border-primary',
                         ]"
                         @click="toggleSlot(dayIdx, pIdx)"
