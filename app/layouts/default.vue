@@ -11,7 +11,7 @@ onMounted(() => {
 
 <template>
   <div
-    class="flex flex-col justify-start w-screen h-screen p-5 background-gradient"
+    class="flex flex-col justify-start w-full h-full min-h-screen p-5 background-gradient"
   >
     <div class="flex items-center justify-between">
       <NuxtLink to="/">

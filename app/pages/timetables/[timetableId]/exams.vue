@@ -2,17 +2,23 @@
   <div class="container mt-10 bg-white">
     <h2>Exams</h2>
 
-    <div v-if="timetable" class="flex">
+    <div v-if="timetable" class="flex gap-2">
       <Card
         v-for="t in timetable.expand.exam_timetables"
         :key="t.id"
-        class="w-auto p-2"
+        class="flex flex-col w-auto gap-2 p-2"
       >
         <div>
-          {{ t.exam_board }} {{ t.qualification }} {{ t.session }} Exams:
-          {{ t.data.length }}
+          <div>{{ t.exam_board }} {{ t.qualification }} {{ t.session }}</div>
+          <div>Exams: {{ t.data.length }}</div>
         </div>
-        <div><Button @click="deleteExamTimetable(t.id)">DELETE</Button></div>
+
+        <Button
+          variant="destructive"
+          size="sm"
+          @click="deleteExamTimetable(t.id)"
+          >DELETE</Button
+        >
       </Card>
     </div>
 
@@ -26,23 +32,30 @@ const route = useRoute();
 const timetable = ref();
 
 async function addExams(data: any) {
-  console.log(data);
+  try {
+    console.log(data);
 
-  const record = await pb.collection("exam_timetables").create(data);
+    const record = await pb.collection("exam_timetables").create(data);
 
-  const timetable = await pb
-    .collection("timetables")
-    .getOne(route.params.timetableId as string);
+    const tb = await pb
+      .collection("timetables")
+      .getOne(route.params.timetableId as string);
 
-  timetable.exam_timetables.push(record.id);
+    tb.exam_timetables.push(record.id);
 
-  const update = await pb
-    .collection("timetables")
-    .update(route.params.timetableId as string, {
-      ...timetable,
-    });
+    const update = await pb.collection("timetables").update(
+      route.params.timetableId as string,
+      {
+        ...tb,
+      },
+      { expand: "exam_timetables" }
+    );
 
-  console.log(update);
+    timetable.value = update;
+    console.log("Update: ", update);
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 async function getTimetable() {
@@ -56,7 +69,8 @@ async function getTimetable() {
 }
 
 async function deleteExamTimetable(id: string) {
-  pb.collection("exam_timetables").delete(id);
+  await pb.collection("exam_timetables").delete(id);
+  await getTimetable();
 }
 
 onMounted(async () => {

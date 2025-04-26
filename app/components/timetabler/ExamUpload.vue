@@ -1,5 +1,5 @@
 <template>
-  <div class="p-5">
+  <div class="">
     <div
       class="p-6 mb-6 text-center border-2 border-gray-400 border-dashed rounded-lg"
       @dragover.prevent
@@ -19,15 +19,35 @@
       </p>
     </div>
 
-    <div v-if="error" class="p-3 mb-4 text-red-700 bg-red-100 rounded-md">
-      {{ error }}
-    </div>
+    <div class="flex flex-col gap-2" v-if="parsedData.length">
+      <div class="flex items-end gap-2 mb-5">
+        <div class="flex flex-col w-auto">
+          Exam Board
+          <Input class="w-64" v-model="exam_board"></Input>
+        </div>
 
+        <div class="flex flex-col w-auto">
+          Qualification
+          <Input class="w-64" v-model="qualification"></Input>
+        </div>
+
+        <div class="flex flex-col w-auto">
+          Session
+          <Input class="w-64" v-model="session"></Input>
+        </div>
+        <div
+          v-if="error"
+          class="p-2 rounded h-min bg-destructive text-destructive-foreground"
+        >
+          {{ error }}
+        </div>
+      </div>
+    </div>
     <div
       v-if="parsedData.length > 0"
       class="flex items-baseline mb-3 space-x-4"
     >
-      <input
+      <Input
         v-model="searchTerm"
         type="text"
         placeholder="Search subject..."
@@ -42,25 +62,6 @@
         Delete Selected ({{ selectedRowIds.size }})
       </Button>
     </div>
-
-    <div v-if="parsedData.length">
-      <div class="flex w-auto">
-        Exam Board
-        <Input class="w-64" v-model="exam_board"></Input>
-      </div>
-
-      <div class="flex w-auto">
-        Qualification
-        <Input class="w-64" v-model="qualification"></Input>
-      </div>
-
-      <div class="flex w-auto">
-        Session
-        <Input class="w-64" v-model="session"></Input>
-      </div>
-      <div v-if="error" class="mt-2 text-red-500">{{ error }}</div>
-    </div>
-
     <div v-if="parsedData.length > 0" class="mb-6">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-semibold">
@@ -99,42 +100,25 @@
             <tr v-if="newRow">
               <td class="border-b"></td>
               <td class="px-2 py-0 border-b">
-                <input
-                  v-model="newRow.subject"
-                  type="text"
-                  class="w-full p-1 border rounded"
-                />
+                <Input v-model="newRow.subject" type="text" />
               </td>
               <td class="px-2 py-0 border-b">
-                <input
-                  v-model="newRow.start"
-                  type="datetime-local"
-                  class="w-full p-1 border rounded"
-                />
+                <Input v-model="newRow.start" type="datetime-local" />
               </td>
               <td class="px-2 py-0 border-b">
-                <input
+                <Input
                   v-model="newRow.duration"
                   type="text"
-                  class="w-full p-1 border rounded"
                   placeholder="01:30"
                 />
               </td>
               <td class="px-2 py-0 border-b">
-                <input
-                  v-model="newRow.room"
-                  type="text"
-                  class="w-full p-1 border rounded"
-                />
+                <Input v-model="newRow.room" type="text" />
               </td>
               <td class="px-2 py-0 border-b">
-                <input
-                  v-model="newRow.examCode"
-                  type="text"
-                  class="w-full p-1 border rounded"
-                />
+                <Input v-model="newRow.examCode" type="text" />
               </td>
-              <td class="px-2 py-0 border-b">
+              <td class="flex gap-2 px-2 py-2 border-b">
                 <Button size="xs" @click="saveNewRow"> Save </Button>
                 <Button size="xs" variant="secondary" @click="cancelNewRow"
                   >Cancel</Button
@@ -148,50 +132,33 @@
               class="hover:bg-gray-100"
             >
               <template v-if="editRowId === item.id">
-                <td class="px-2 py-2 border-b">
-                  <input
+                <td class="px-2 py-1 border-b">
+                  <Input
                     type="checkbox"
                     :checked="selectedRowIds.has(item.id)"
                     @change="toggleSelectRow(item.id, $event.target.checked)"
                   />
                 </td>
                 <td class="px-2 py-0 border-b">
-                  <input
-                    v-model="editBuffer.subject"
-                    type="text"
-                    class="w-full p-1 border rounded"
-                  />
+                  <Input v-model="editBuffer.subject" type="text" />
                 </td>
                 <td class="px-2 py-0 border-b">
-                  <input
-                    v-model="editBuffer.start"
-                    type="datetime-local"
-                    class="w-full p-1 border rounded"
-                  />
+                  <Input v-model="editBuffer.start" type="datetime-local" />
                 </td>
                 <td class="px-2 py-0 border-b">
-                  <input
+                  <Input
                     v-model="editBuffer.duration"
                     type="text"
-                    class="w-full p-1 border rounded"
                     placeholder="01:30"
                   />
                 </td>
                 <td class="px-2 py-0 border-b">
-                  <input
-                    v-model="editBuffer.room"
-                    type="text"
-                    class="w-full p-1 border rounded"
-                  />
+                  <Input v-model="editBuffer.room" type="text" />
                 </td>
                 <td class="px-2 py-0 border-b">
-                  <input
-                    v-model="editBuffer.examCode"
-                    type="text"
-                    class="w-full p-1 border rounded"
-                  />
+                  <Input v-model="editBuffer.examCode" type="text" />
                 </td>
-                <td class="px-2 py-0 border-b">
+                <td class="flex gap-2 px-2 py-2 border-b">
                   <Button size="xs" @click="saveEditRow"> Save </Button>
                   <Button size="xs" variant="secondary" @click="cancelEditRow"
                     >Cancel</Button
@@ -257,9 +224,9 @@ import Fuse from "fuse.js";
 const emit = defineEmits(["exams:add"]);
 
 // The new refs for user inputs
-const exam_board = ref("");
-const qualification = ref("");
-const session = ref("");
+const exam_board = ref("Pearson");
+const qualification = ref("iGCSE");
+const session = ref("Summer 2025");
 
 const allowedQualifications = ["iGCSE", "GCSE", "iAL", "AL"];
 
@@ -554,5 +521,6 @@ function multiDelete() {
     (row) => !selectedRowIds.value.has(row.id)
   );
   selectedRowIds.value = new Set();
+  searchTerm.value = "";
 }
 </script>
