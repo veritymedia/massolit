@@ -278,7 +278,7 @@ function removeSubject(idx: number) {
 })();
 </script>
 <template>
-  <div class="flex flex-col gap-5 mt-10 bg-white">
+  <div class="flex flex-col gap-5 mt-10">
     <div class="flex gap-2">
       <NuxtLink to="/timetables"
         ><Icon class="size-6" name="material-symbols:arrow-left-alt-rounded"

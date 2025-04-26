@@ -73,7 +73,7 @@
       </div>
 
       <div
-        class="overflow-x-auto relative shadow-2xl max-h-[60vh] text-sm bg-gray-200 rounded-2xl"
+        class="overflow-x-auto relative shadow-2xl max-h-[60vh] text-sm bg-background p-4 rounded-2xl"
       >
         <table class="min-w-full">
           <thead>
@@ -126,7 +126,7 @@
             <tr
               v-for="item in filteredRows"
               :key="item.id"
-              class="hover:bg-gray-100"
+              class="hover:bg-zinc-900"
             >
               <template v-if="editRowId === item.id">
                 <td class="px-2 py-1 border-b">
@@ -182,11 +182,11 @@
                     <Button
                       @click="startEditRow(item)"
                       size="xs"
-                      variant="secondary"
+                      variant="outline"
                       >Edit</Button
                     >
                     <Button
-                      variant="secondary"
+                      variant="outline"
                       size="xs"
                       @click="duplicateExam(item)"
                       >Duplicate</Button

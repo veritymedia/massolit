@@ -113,7 +113,7 @@ async function findRental(qrScannedCode: string): Promise<Record | undefined> {
 }
 
 async function findBookInstance(
-  qrScannedCode: string,
+  qrScannedCode: string
 ): Promise<Record | undefined> {
   try {
     const bookInstance = await pb
@@ -137,7 +137,7 @@ async function findBook(isbn: number): Promise<Record | undefined> {
 }
 
 async function checkBookStatus(
-  parsedCode: MassolitCode,
+  parsedCode: MassolitCode
 ): Promise<RentedBookStatus> {
   // TODO: change the object to a class which dynmically computes the status based on the info present.
   const bookRentedStatusModel: RentedBookStatus = {
@@ -289,41 +289,34 @@ onMounted(() => {
 
 <template>
   <div
-    class="h-screen w-screen background-gradient flex-col justify-between p-5 flex"
+    class="flex flex-col justify-between w-screen h-screen p-5 background-gradient"
   >
     <div
       v-if="isLoading"
-      class="w-screen h-screen fixed top-0 left-0 bg-background flex items-center justify-center"
+      class="fixed top-0 left-0 flex items-center justify-center w-screen h-screen bg-background"
     >
       <Icon name="line-md:loading-loop" class="w-16 h-16" />
     </div>
     <AppAlert />
-    <div>
-      <div class="flex items-center justify-between">
-        <NuxtLink to="/">
-          <img src="/images/logos/massolit-logo.png" class="w-24" alt="" />
-        </NuxtLink>
-        <p class="text-sm">{{ pb.authStore.model?.email }}</p>
+
+    <div class="mt-20">
+      <div v-if="route.name === 'app'">
+        <StudentBooks />
       </div>
-      <div class="mt-20">
-        <div v-if="route.name === 'app'">
-          <StudentBooks />
-        </div>
-        <NuxtPage v-else :rentedBookStatus="bookStatus" :key="scannedBookId" />
-      </div>
+      <NuxtPage v-else :rentedBookStatus="bookStatus" :key="scannedBookId" />
     </div>
     <Dialog v-model:open="isOpen" class="max-h-min">
       <DialogTrigger class="sticky bottom-5" as-child>
         <Button class="w-full">Scan Book</Button>
       </DialogTrigger>
-      <DialogContent class="h-full flex flex-col justify-between">
+      <DialogContent class="flex flex-col justify-between h-full">
         <DialogHeader>
           <DialogTitle>Register Book</DialogTitle>
           <DialogDescription> Scan book QR code. </DialogDescription>
         </DialogHeader>
         <ScannerQrScanner @qrResult="handleQrResult" />
 
-        <DialogFooter class="w-full flex items-center"> </DialogFooter>
+        <DialogFooter class="flex items-center w-full"> </DialogFooter>
       </DialogContent>
     </Dialog>
   </div>

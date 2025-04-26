@@ -1,6 +1,6 @@
 <template>
-  <div class="w-screen h-screen rounded-lg shadow-md">
-    <h1 class="mb-6 text-2xl font-bold text-indigo-800">Exam Schedule</h1>
+  <div class="rounded-lg text-foreground">
+    <h1 class="mb-6 text-2xl font-bold">Exam Schedule</h1>
 
     <!-- Loading state -->
     <div v-if="loading" class="flex justify-center py-10">
@@ -10,60 +10,45 @@
     </div>
 
     <!-- Empty state -->
-    <div
-      v-else-if="weeklyExams.length === 0"
-      class="py-10 text-center text-gray-500"
-    >
+    <div v-else-if="localWeeklyExams.length === 0" class="py-10 text-center">
       No exams scheduled at this time.
     </div>
 
     <!-- Exams by week -->
-    <div v-else class="w-full h-full">
+    <div v-else class="flex flex-col w-full h-full">
       <div
-        v-for="(week, weekIndex) in weeklyExams"
+        v-for="(week, weekIndex) in localWeeklyExams"
         :key="weekIndex"
         class="mb-8"
       >
         <div class="flex items-center mb-4">
           <div class="w-3 h-3 mr-2 bg-[purple] rounded-full"></div>
-          <h2 class="text-xl font-semibold text-gray-800">
+          <h2 class="text-xl font-semibold">
             {{ week.weekLabel }}
           </h2>
         </div>
 
         <!-- Week exams cards -->
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           <div
             v-for="(examGroup, examIndex) in week.examGroups"
             :key="examIndex"
-            class="p-4 transition-shadow duration-200 border-l-4 rounded-lg shadow-sm bg-background hover:shadow-md"
+            class="p-4 transition-shadow duration-200 border-l-4 rounded-lg shadow-sm max-h-min bg-background bg-opacity-35 hover:shadow-md"
             :class="getBorderClass(examGroup)"
           >
             <!-- Subject(s) and completion badge -->
             <div class="flex items-start justify-between mb-2">
               <div>
-                <h3 class="text-lg font-medium text-gray-900 capitalize">
+                <h3 class="text-lg font-medium capitalize">
                   {{ getSubjectsLabel(examGroup) }}
                 </h3>
-                <span
-                  v-if="examGroup.exams.length > 1"
-                  class="text-xs text-gray-500"
-                >
+                <span v-if="examGroup.exams.length > 1" class="text-xs">
                   {{ examGroup.exams.length }} combined exams
                 </span>
               </div>
+
               <span
-                v-if="examGroup.exams.length === 1"
-                :class="{
-                  'bg-green-100 text-green-800': examGroup.exams[0].complete,
-                  'bg-yellow-100 text-yellow-800': !examGroup.exams[0].complete,
-                }"
-                class="px-2 py-1 text-xs font-medium rounded-full"
-              >
-                {{ examGroup.exams[0].complete ? "Complete" : "Incomplete" }}
-              </span>
-              <span
-                v-else
+                v-if="examGroup.exams.length > 1"
                 class="px-2 py-1 text-xs font-medium text-blue-800 bg-blue-100 rounded-full"
               >
                 Multiple
@@ -71,50 +56,35 @@
             </div>
 
             <!-- Time and room info -->
-            <div class="mb-3 text-sm text-gray-600">
-              <div class="flex items-center mb-1">
-                <svg
-                  class="w-4 h-4 mr-1"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  ></path>
-                </svg>
-                {{ formatDate(examGroup.start) }} -
-                {{ formatTime(getLatestEndTime(examGroup)) }}
-                <span class="ml-1">({{ getDurationRange(examGroup) }})</span>
+            <div class="flex flex-col gap-2">
+              <div>
+                <!-- <Icon name="material-symbols:delete" /> -->
+                <span class="text-lg font-bold">{{
+                  formatTime(examGroup.exams[0].bookedSegments[0].start)
+                }}</span>
               </div>
-              <div class="flex items-center">
-                <svg
-                  class="w-4 h-4 mr-1"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                  ></path>
-                </svg>
-                {{ examGroup.room }}
+              <div class="flex flex-col gap-2">
+                <div>
+                  <span class="pr-2 text-xl">📅</span>
+                  {{ formatDate(examGroup.start) }} <br />
+                </div>
+                <div>
+                  <span class="pr-2 text-xl">⏳</span>
+                  {{ formatTime(getLatestEndTime(examGroup)) }} ({{
+                    getDurationRange(examGroup)
+                  }})
+                </div>
+
+                <div>
+                  <span class="pr-2 text-xl">🏢</span>
+                  {{ examGroup.room }}
+                </div>
               </div>
             </div>
 
             <!-- Teachers -->
             <div v-if="getAllTeachers(examGroup).length > 0" class="mt-3">
-              <h4 class="mb-1 text-sm font-medium text-gray-700">
-                Proctored by:
-              </h4>
+              <h4 class="mb-1 text-sm font-medium">Proctored by:</h4>
               <div class="flex flex-wrap">
                 <span
                   v-for="(teacher, teacherIndex) in getAllTeachers(examGroup)"
@@ -127,27 +97,29 @@
             </div>
 
             <!-- Expand button for more details -->
-            <button
-              @click="toggleExamDetails(weekIndex, examIndex)"
-              class="flex items-center mt-3 text-sm text-indigo-600 hover:text-indigo-800"
-            >
-              {{ examGroup.showDetails ? "Hide details" : "Show details" }}
-              <svg
-                class="w-4 h-4 ml-1 transition-transform duration-200"
-                :class="{ 'transform rotate-180': examGroup.showDetails }"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
+            <div class="flex justify-center w-full">
+              <button
+                @click="toggleExamDetails(weekIndex, examIndex)"
+                class="flex items-center px-3 py-1 text-sm rounded-full textsm bg-muted"
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M19 9l-7 7-7-7"
-                ></path>
-              </svg>
-            </button>
+                {{ examGroup.showDetails ? "Hide details" : "Show details" }}
+                <svg
+                  class="w-4 h-4 transition-transform duration-200"
+                  :class="{ 'transform rotate-180': examGroup.showDetails }"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 9l-7 7-7-7"
+                  ></path>
+                </svg>
+              </button>
+            </div>
 
             <!-- Expanded details -->
             <div
@@ -156,20 +128,20 @@
             >
               <!-- Multiple exams info -->
               <div v-if="examGroup.exams.length > 1">
-                <h5 class="mb-2 font-medium text-gray-700">Combined Exams:</h5>
+                <h5 class="mb-2 font-medium">Combined Exams:</h5>
                 <div
                   v-for="(exam, examIdx) in examGroup.exams"
                   :key="examIdx"
                   class="pl-2 mb-3 border-l-2 border-gray-200"
                 >
                   <div class="flex justify-between">
-                    <span class="font-medium text-gray-700 capitalize">{{
+                    <span class="font-medium capitalize">{{
                       exam.subject
                     }}</span>
                     <span
                       :class="{
-                        'bg-green-100 text-green-800': exam.complete,
-                        'bg-yellow-100 text-yellow-800': !exam.complete,
+                        'bg-lime-300 text-lime-900': exam.complete,
+                        'bg-orange-300 text-orange-900': !exam.complete,
                       }"
                       class="px-2 py-1 text-xs font-medium rounded-full"
                     >
@@ -213,14 +185,14 @@
                     :key="segmentIndex"
                     class="mb-2"
                   >
-                    <h5 class="font-medium text-gray-700">
+                    <h5 class="font-medium">
                       Teacher: {{ segment.teacher.name }}
                     </h5>
-                    <p class="text-gray-600">
+                    <p class="">
                       Subjects: {{ segment.teacher.subjects.join(", ") }}
                     </p>
-                    <p class="text-gray-600">Availability on this day:</p>
-                    <ul class="pl-5 text-gray-600 list-disc">
+                    <p class="">Availability on this day:</p>
+                    <ul class="pl-5 list-disc">
                       <li
                         v-for="(avail, availIndex) in filterAvailabilitiesByDow(
                           segment.teacher.availabilities,
@@ -338,60 +310,117 @@ const groupExamsByRoomAndTime = (exams: Exam[]): ExamGroup[] => {
   return Object.values(groups);
 };
 
-// Group exams by week
-const weeklyExams = computed<WeekGroup[]>(() => {
-  if (!props.exams || props.exams.length === 0) return [];
+const localWeeklyExams = ref<WeekGroup[]>([]);
 
-  // Group exams by week
-  const weeks: Record<string, WeekGroup> = {};
-
-  props.exams.forEach((exam) => {
-    const examDate = new Date(exam.start);
-    // Get week start (Monday)
-    const weekStart = new Date(examDate);
-    weekStart.setDate(
-      examDate.getDate() -
-        examDate.getDay() +
-        (examDate.getDay() === 0 ? -6 : 1)
-    );
-
-    // Format week key: YYYY-MM-DD
-    const weekKey = weekStart.toISOString().split("T")[0];
-
-    // Create week if it doesn't exist
-    if (!weeks[weekKey]) {
-      const weekEnd = new Date(weekStart);
-      weekEnd.setDate(weekStart.getDate() + 6);
-
-      weeks[weekKey] = {
-        weekStart,
-        weekEnd,
-        weekLabel: formatWeekLabel(weekStart, weekEnd),
-        examGroups: [],
-      };
+watch(
+  () => props.exams,
+  (newExams) => {
+    if (!newExams || newExams.length === 0) {
+      localWeeklyExams.value = [];
+      return;
     }
-  });
 
-  // For each week, group exams by room and start time
-  Object.keys(weeks).forEach((weekKey) => {
-    const weekStart = weeks[weekKey].weekStart;
-    const weekEnd = weeks[weekKey].weekEnd;
+    // Group by week and group by room+time
+    const weeks: Record<string, WeekGroup> = {};
 
-    // Filter exams that fall within this week
-    const weekExams = props.exams.filter((exam) => {
+    newExams.forEach((exam) => {
       const examDate = new Date(exam.start);
-      return examDate >= weekStart && examDate <= weekEnd;
+      const weekStart = new Date(examDate);
+      weekStart.setDate(
+        examDate.getDate() -
+          examDate.getDay() +
+          (examDate.getDay() === 0 ? -6 : 1)
+      );
+
+      const weekKey = weekStart.toISOString().split("T")[0];
+
+      if (!weeks[weekKey]) {
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 6);
+
+        weeks[weekKey] = {
+          weekStart,
+          weekEnd,
+          weekLabel: formatWeekLabel(weekStart, weekEnd),
+          examGroups: [],
+        };
+      }
     });
 
-    // Group these exams by room and start time
-    weeks[weekKey].examGroups = groupExamsByRoomAndTime(weekExams);
-  });
+    Object.keys(weeks).forEach((weekKey) => {
+      const weekStart = weeks[weekKey].weekStart;
+      const weekEnd = weeks[weekKey].weekEnd;
 
-  // Convert to array and sort by week start date
-  return Object.values(weeks).sort(
-    (a, b) => a.weekStart.getTime() - b.weekStart.getTime()
-  );
-});
+      const weekExams = newExams.filter((exam) => {
+        const examDate = new Date(exam.start);
+        return examDate >= weekStart && examDate <= weekEnd;
+      });
+
+      weeks[weekKey].examGroups = groupExamsByRoomAndTime(weekExams);
+    });
+
+    // Finally assign
+    localWeeklyExams.value = Object.values(weeks).sort(
+      (a, b) => a.weekStart.getTime() - b.weekStart.getTime()
+    );
+  },
+  { immediate: true }
+);
+
+// Group exams by week
+// const weeklyExams = computed<WeekGroup[]>(() => {
+//   if (!props.exams || props.exams.length === 0) return [];
+
+//   // Group exams by week
+//   const weeks: Record<string, WeekGroup> = {};
+
+//   props.exams.forEach((exam) => {
+//     const examDate = new Date(exam.start);
+//     // Get week start (Monday)
+//     const weekStart = new Date(examDate);
+//     weekStart.setDate(
+//       examDate.getDate() -
+//         examDate.getDay() +
+//         (examDate.getDay() === 0 ? -6 : 1)
+//     );
+
+//     // Format week key: YYYY-MM-DD
+//     const weekKey = weekStart.toISOString().split("T")[0];
+
+//     // Create week if it doesn't exist
+//     if (!weeks[weekKey]) {
+//       const weekEnd = new Date(weekStart);
+//       weekEnd.setDate(weekStart.getDate() + 6);
+
+//       weeks[weekKey] = {
+//         weekStart,
+//         weekEnd,
+//         weekLabel: formatWeekLabel(weekStart, weekEnd),
+//         examGroups: [],
+//       };
+//     }
+//   });
+
+//   // For each week, group exams by room and start time
+//   Object.keys(weeks).forEach((weekKey) => {
+//     const weekStart = weeks[weekKey].weekStart;
+//     const weekEnd = weeks[weekKey].weekEnd;
+
+//     // Filter exams that fall within this week
+//     const weekExams = props.exams.filter((exam) => {
+//       const examDate = new Date(exam.start);
+//       return examDate >= weekStart && examDate <= weekEnd;
+//     });
+
+//     // Group these exams by room and start time
+//     weeks[weekKey].examGroups = groupExamsByRoomAndTime(weekExams);
+//   });
+
+//   // Convert to array and sort by week start date
+//   return Object.values(weeks).sort(
+//     (a, b) => a.weekStart.getTime() - b.weekStart.getTime()
+//   );
+// });
 
 // Methods
 // Format date (Wed, May 8)
@@ -436,27 +465,38 @@ const filterAvailabilitiesByDow = (availabilities: any[], dow: number) => {
 
 // Toggle exam details
 const toggleExamDetails = (weekIndex: number, examIndex: number) => {
-  weeklyExams.value[weekIndex].examGroups[examIndex].showDetails =
-    !weeklyExams.value[weekIndex].examGroups[examIndex].showDetails;
+  localWeeklyExams.value[weekIndex].examGroups[examIndex].showDetails =
+    !localWeeklyExams.value[weekIndex].examGroups[examIndex].showDetails;
+  console.log(
+    "Toggle show, week: ",
+    weekIndex,
+    examIndex,
+    "State: ",
+    localWeeklyExams.value[weekIndex].examGroups[examIndex].showDetails
+  );
 };
 
 // Get border color class based on exam completion status
 const getBorderClass = (examGroup: ExamGroup): string => {
-  if (examGroup.exams.length === 1) {
-    return examGroup.exams[0].complete
-      ? "border-green-500"
-      : "border-yellow-500";
-  }
-
-  // Mixed completion status for multiple exams
+  const isSingleExam = examGroup.exams.length === 1;
   const allComplete = examGroup.exams.every((exam) => exam.complete);
   const allIncomplete = examGroup.exams.every((exam) => !exam.complete);
 
-  if (allComplete) return "border-green-500";
-  if (allIncomplete) return "border-yellow-500";
+  if (isSingleExam) {
+    return examGroup.exams[0].complete
+      ? "border-transparent" // Single exam complete = Success
+      : "border-red-500"; // Single exam incomplete = Warning
+  }
 
-  // Mixed status
-  return "border-blue-500";
+  if (allComplete) {
+    return "border-transparent"; // All exams complete = Success
+  }
+
+  if (allIncomplete) {
+    return "border-red-500"; // All exams incomplete = Warning
+  }
+
+  return "border-orange-500"; // Mixed completion = Info
 };
 
 // Get combined subjects label
