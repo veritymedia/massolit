@@ -276,12 +276,12 @@ const parsedData = ref<any[]>([]);
 
 const expectedHeaders = [
   "Date",
-  "Exam series",
-  "Board",
-  "Qual",
+  // "Exam series",
+  // "Board",
+  // "Qual",
   "Examination code",
   "Subject",
-  "Title",
+  // "Title",
   "Time",
   "Duration",
 ];
@@ -381,7 +381,7 @@ function parseToExamRawFormat() {
       // ISO
       const isoDate = `${year}-${month.padStart(2, "0")}-${day.padStart(
         2,
-        "0"
+        "0",
       )}T${timeValue}:00`;
 
       // Duration Parsing
@@ -515,7 +515,7 @@ function toggleSelectAllVisibleRows(checked: boolean) {
 }
 function multiDelete() {
   parsedData.value = parsedData.value.filter(
-    (row) => !selectedRowIds.value.has(row.id)
+    (row) => !selectedRowIds.value.has(row.id),
   );
   selectedRowIds.value = new Set();
   searchTerm.value = "";
