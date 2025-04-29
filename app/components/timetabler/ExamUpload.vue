@@ -216,6 +216,7 @@
 import { ref, computed } from "vue";
 import Papa from "papaparse";
 import Fuse from "fuse.js";
+import { shapeData } from "./csv-utils";
 
 // Emits
 const emit = defineEmits(["exams:add"]);
@@ -275,15 +276,15 @@ const parsedData = ref<any[]>([]);
 // Extra: show/hide headers warning if needed
 
 const expectedHeaders = [
-  "Date",
+  "date",
   // "Exam series",
   // "Board",
   // "Qual",
-  "Examination code",
-  "Subject",
+  "examCode",
+  "subject",
   // "Title",
-  "Time",
-  "Duration",
+  "time",
+  "duration",
 ];
 
 function triggerFileInput() {
@@ -367,50 +368,7 @@ function validateHeaders(headers?: string[]) {
 function parseToExamRawFormat() {
   parsedData.value = csvData.value
     .map((row, index) => {
-      if (!row.Date) return null;
-      const dateParts = row.Date.split("/");
-      if (dateParts.length !== 3) return null;
-      const [month, day, year] = dateParts;
-
-      // Time
-      let timeValue = props.config.morning;
-      if (row.Time && row.Time.toLowerCase().includes("afternoon")) {
-        timeValue = props.config.afternoon;
-      }
-
-      // ISO
-      const isoDate = `${year}-${month.padStart(2, "0")}-${day.padStart(
-        2,
-        "0",
-      )}T${timeValue}:00`;
-
-      // Duration Parsing
-      let formattedDuration = "01:00";
-      if (row.Duration) {
-        let h: string = "00",
-          m: string = "00";
-        const durationMatch = row.Duration.match(/(\d+)h\s*(\d+)m/);
-        if (durationMatch) {
-          h = durationMatch[1].padStart(2, "0");
-          m = durationMatch[2].padStart(2, "0");
-          formattedDuration = `${h}:${m}`;
-        } else if (row.Duration.match(/(\d+)h/)) {
-          h = row.Duration.match(/(\d+)h/)![1].padStart(2, "0");
-          formattedDuration = `${h}:00`;
-        } else if (row.Duration.match(/(\d+)m/)) {
-          m = row.Duration.match(/(\d+)m/)![1].padStart(2, "0");
-          formattedDuration = `00:${m}`;
-        }
-      }
-
-      return {
-        id: `exam-${index}-${Date.now()}`,
-        subject: row.Subject || "",
-        start: isoDate,
-        duration: formattedDuration,
-        room: "Room1",
-        examCode: row["Examination code"] || undefined,
-      };
+      return shapeData(row);
     })
     .filter((item) => item !== null);
 }
