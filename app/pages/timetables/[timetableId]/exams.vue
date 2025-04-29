@@ -9,25 +9,45 @@
 
     <div v-if="timetable" class="flex gap-2">
       <Card
-        v-for="t in timetable.expand.exam_timetables"
-        :key="t.id"
+        v-for="et in timetable.expand.exam_timetables"
+        :key="et.id"
         class="flex flex-col w-auto gap-2 p-4"
       >
         <div>
-          <div>{{ t.exam_board }} {{ t.qualification }} {{ t.session }}</div>
-          <div>Exams: {{ t.data.length }}</div>
+          <div>{{ et.exam_board }} {{ et.qualification }} {{ et.session }}</div>
+          <div>Exams: {{ et.data.length }}</div>
         </div>
+        <div class="flex gap-2">
+          <Button
+            v-if="et.id !== $route.params.timetableListId"
+            variant="outline"
+            class="w-full"
+            @click="
+              navigateTo(
+                `/timetables/${$route.params.timetableId}/exams/${et.id}`,
+              )
+            "
+            >Edit</Button
+          >
+          <Button
+            v-else
+            class="w-full"
+            @click="navigateTo(`/timetables/${$route.params.timetableId}`)"
+            >Cancel
+          </Button>
 
-        <Button
-          variant="destructive"
-          size="sm"
-          @click="deleteExamTimetable(t.id)"
-          >DELETE</Button
-        >
+          <Button variant="destructive" @click="deleteExamTimetable(et.id)"
+            ><Icon name="material-symbols:delete"
+          /></Button>
+        </div>
       </Card>
     </div>
 
-    <TimetablerExamUpload @exams:add="addExams" />
+    <TimetablerExamUpload
+      v-if="!$route.params.timetableListId"
+      @exams:add="addExams"
+    />
+    <NuxtPage v-if="$route.params.timetableListId" />
   </div>
 </template>
 
@@ -53,7 +73,7 @@ async function addExams(data: any) {
       {
         ...tb,
       },
-      { expand: "exam_timetables" }
+      { expand: "exam_timetables" },
     );
 
     timetable.value = update;

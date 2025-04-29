@@ -1,3 +1,5 @@
+import { generateId } from "~/utils";
+
 export function shapeData(row: any) {
   if (!row.date) return null;
 
@@ -22,27 +24,8 @@ export function shapeData(row: any) {
   // Format date in ISO format
   const isoDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}T${row.time}:00`;
 
-  // Parse duration
-  // let formattedDuration = '01:00' // Default duration
-  // if (row.duration) {
-  //   let h = '00',
-  //     m = '00'
-  //   const durationMatch = row.duration.match(/(\d+)h\s*(\d+)m/)
-  //   if (durationMatch) {
-  //     h = durationMatch[1].padStart(2, '0')
-  //     m = durationMatch[2].padStart(2, '0')
-  //     formattedDuration = `${h}:${m}`
-  //   } else if (row.duration.match(/(\d+)h/)) {
-  //     h = row.duration.match(/(\d+)h/)[1].padStart(2, '0')
-  //     formattedDuration = `${h}:00`
-  //   } else if (row.duration.match(/(\d+)m/)) {
-  //     m = row.duration.match(/(\d+)m/)[1].padStart(2, '0')
-  //     formattedDuration = `00:${m}`
-  //   }
-  // }
-
   // Generate a unique ID using timestamp and index
-  const uniqueId = `exam-${Date.now()}`;
+  const uniqueId = generateId(10);
 
   return {
     id: uniqueId,
