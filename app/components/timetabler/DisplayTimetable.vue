@@ -209,7 +209,7 @@
                       <li
                         v-for="(avail, availIndex) in filterAvailabilitiesByDow(
                           segment.teacher.availabilities,
-                          examGroup.exams[0].dow
+                          examGroup.exams[0].dow,
                         )"
                         :key="availIndex"
                       >
@@ -279,7 +279,7 @@ watch(
     if (newVal !== undefined) {
       localLoading.value = newVal;
     }
-  }
+  },
 );
 
 // Interface for grouped exams (merged by room and start time)
@@ -296,6 +296,60 @@ interface WeekGroup {
   weekEnd: Date;
   weekLabel: string;
   examGroups: ExamGroup[];
+}
+
+interface Teacher {
+  id: string;
+  name: string;
+}
+
+interface BookedSegment {
+  teacher: Teacher;
+  start: string | Date;
+  end: string | Date;
+}
+
+interface MergedSegment {
+  teacher: Teacher;
+  start: Date;
+  end: Date;
+}
+
+function mergeContiguousSegments(segments: BookedSegment[]): MergedSegment[] {
+  // Normalize dates
+  const normalized = segments.map((seg) => ({
+    ...seg,
+    start: new Date(seg.start),
+    end: new Date(seg.end),
+  }));
+
+  // Sort by teacher and start time
+  normalized.sort((a, b) => {
+    if (a.teacher.id !== b.teacher.id) {
+      return a.teacher.id.localeCompare(b.teacher.id);
+    }
+    return a.start.getTime() - b.start.getTime();
+  });
+
+  const result: MergedSegment[] = [];
+
+  for (const seg of normalized) {
+    const last = result[result.length - 1];
+
+    if (
+      last &&
+      last.teacher.id === seg.teacher.id &&
+      last.end.getTime() === seg.start.getTime()
+    ) {
+      // Extend the last segment
+      last.end = seg.end;
+    } else {
+      // Start a new segment
+      result.push({ ...seg });
+    }
+  }
+
+  return result;
 }
 
 // Group exams by room and start time
@@ -342,7 +396,7 @@ watch(
       weekStart.setDate(
         examDate.getDate() -
           examDate.getDay() +
-          (examDate.getDay() === 0 ? -6 : 1)
+          (examDate.getDay() === 0 ? -6 : 1),
       );
 
       const weekKey = weekStart.toISOString().split("T")[0];
@@ -374,66 +428,11 @@ watch(
 
     // Finally assign
     localWeeklyExams.value = Object.values(weeks).sort(
-      (a, b) => a.weekStart.getTime() - b.weekStart.getTime()
+      (a, b) => a.weekStart.getTime() - b.weekStart.getTime(),
     );
   },
-  { immediate: true }
+  { immediate: true },
 );
-
-// Group exams by week
-// const weeklyExams = computed<WeekGroup[]>(() => {
-//   if (!props.exams || props.exams.length === 0) return [];
-
-//   // Group exams by week
-//   const weeks: Record<string, WeekGroup> = {};
-
-//   props.exams.forEach((exam) => {
-//     const examDate = new Date(exam.start);
-//     // Get week start (Monday)
-//     const weekStart = new Date(examDate);
-//     weekStart.setDate(
-//       examDate.getDate() -
-//         examDate.getDay() +
-//         (examDate.getDay() === 0 ? -6 : 1)
-//     );
-
-//     // Format week key: YYYY-MM-DD
-//     const weekKey = weekStart.toISOString().split("T")[0];
-
-//     // Create week if it doesn't exist
-//     if (!weeks[weekKey]) {
-//       const weekEnd = new Date(weekStart);
-//       weekEnd.setDate(weekStart.getDate() + 6);
-
-//       weeks[weekKey] = {
-//         weekStart,
-//         weekEnd,
-//         weekLabel: formatWeekLabel(weekStart, weekEnd),
-//         examGroups: [],
-//       };
-//     }
-//   });
-
-//   // For each week, group exams by room and start time
-//   Object.keys(weeks).forEach((weekKey) => {
-//     const weekStart = weeks[weekKey].weekStart;
-//     const weekEnd = weeks[weekKey].weekEnd;
-
-//     // Filter exams that fall within this week
-//     const weekExams = props.exams.filter((exam) => {
-//       const examDate = new Date(exam.start);
-//       return examDate >= weekStart && examDate <= weekEnd;
-//     });
-
-//     // Group these exams by room and start time
-//     weeks[weekKey].examGroups = groupExamsByRoomAndTime(weekExams);
-//   });
-
-//   // Convert to array and sort by week start date
-//   return Object.values(weeks).sort(
-//     (a, b) => a.weekStart.getTime() - b.weekStart.getTime()
-//   );
-// });
 
 // Methods
 // Format date (Wed, May 8)
@@ -485,7 +484,7 @@ const toggleExamDetails = (weekIndex: number, examIndex: number) => {
     weekIndex,
     examIndex,
     "State: ",
-    localWeeklyExams.value[weekIndex].examGroups[examIndex].showDetails
+    localWeeklyExams.value[weekIndex].examGroups[examIndex].showDetails,
   );
 };
 
