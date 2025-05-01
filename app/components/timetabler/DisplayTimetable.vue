@@ -22,7 +22,7 @@
         class="mb-8"
       >
         <div class="flex items-center mb-4">
-          <div class="w-3 h-3 mr-2 bg-[purple] rounded-full"></div>
+          <div class="w-3 h-3 mr-2 bg-purple-500 rounded-full"></div>
           <h2 class="text-xl font-semibold">
             {{ week.weekLabel }}
           </h2>
@@ -36,7 +36,7 @@
             class="p-4 transition-shadow duration-200 border-l-4 rounded-lg shadow-sm max-h-min bg-background bg-opacity-35 hover:shadow-md"
             :class="getBorderClass(examGroup)"
           >
-            <!-- Subject(s) and completion badge -->
+            <!-- Subject(s) and exam code badge -->
             <div class="flex items-start justify-between mb-2">
               <div>
                 <h3 class="text-lg font-medium capitalize">
@@ -48,7 +48,13 @@
               </div>
 
               <span
-                v-if="examGroup.exams.length > 1"
+                v-if="examGroup.exams[0].examCode"
+                class="px-2 py-1 text-xs font-medium text-blue-800 bg-blue-100 rounded-full"
+              >
+                {{ examGroup.exams[0].examCode }}
+              </span>
+              <span
+                v-else-if="examGroup.exams.length > 1"
                 class="px-2 py-1 text-xs font-medium text-blue-800 bg-blue-100 rounded-full"
               >
                 Multiple
@@ -58,24 +64,19 @@
             <!-- Time and room info -->
             <div class="flex flex-col gap-2">
               <div>
-                <!-- <Icon name="material-symbols:delete" /> -->
                 <span class="text-lg font-bold">{{
-                  examGroup.exams.length > 0 &&
-                  examGroup.exams[0].bookedSegments.length > 0 &&
-                  examGroup.exams[0].bookedSegments[0].start
-                    ? formatTime(examGroup.exams[0].bookedSegments[0].start)
-                    : ""
+                  formatTimeFromString(examGroup.exams[0].start)
                 }}</span>
               </div>
               <div class="flex flex-col gap-2">
                 <div>
                   <span class="pr-2 text-xl">📅</span>
-                  {{ formatDate(examGroup.start) }} <br />
+                  {{ formatDateFromString(examGroup.exams[0].date) }}
                 </div>
                 <div>
                   <span class="pr-2 text-xl">⏳</span>
-                  {{ formatTime(getLatestEndTime(examGroup)) }} ({{
-                    getDurationRange(examGroup)
+                  {{ getEndTime(examGroup.exams[0]) }} ({{
+                    formatDuration(examGroup.exams[0].duration)
                   }})
                 </div>
 
@@ -86,22 +87,22 @@
               </div>
             </div>
 
-            <!-- Teachers -->
-            <div v-if="getAllTeachers(examGroup).length > 0" class="mt-3">
+            <!-- Proctors -->
+            <div v-if="getAllProctors(examGroup).length > 0" class="mt-3">
               <h4 class="mb-1 text-sm font-medium">Proctored by:</h4>
               <div class="flex flex-wrap">
                 <span
-                  v-for="(teacher, teacherIndex) in getAllTeachers(examGroup)"
-                  :key="teacherIndex"
+                  v-for="(proctor, proctorIndex) in getAllProctors(examGroup)"
+                  :key="proctorIndex"
                   class="px-2 py-1 mb-1 mr-1 text-xs text-indigo-800 bg-indigo-100 rounded-full"
                 >
-                  {{ teacher.name }}
+                  {{ proctor }}
                 </span>
               </div>
             </div>
 
             <!-- Expand button for more details -->
-            <div class="flex justify-center w-full">
+            <div class="flex justify-center w-full mt-3">
               <button
                 @click="toggleExamDetails(weekIndex, examIndex)"
                 class="flex items-center px-3 py-1 text-sm rounded-full textsm bg-muted"
@@ -130,15 +131,6 @@
               v-if="examGroup.showDetails"
               class="pt-3 mt-3 text-sm border-t border-gray-200"
             >
-              <ul>
-                <li v-for="exam in examGroup.exams">
-                  <div v-for="segments in exam.bookedSegments">
-                    {{ formatTime(segments.start) }}-{{
-                      formatTime(segments.end)
-                    }}-{{ segments.teacher.name }}
-                  </div>
-                </li>
-              </ul>
               <!-- Multiple exams info -->
               <div v-if="examGroup.exams.length > 1">
                 <h5 class="mb-2 font-medium">Combined Exams:</h5>
@@ -152,74 +144,64 @@
                       exam.subject
                     }}</span>
                     <span
-                      :class="{
-                        'bg-lime-300 text-lime-900': exam.complete,
-                        'bg-orange-300 text-orange-900': !exam.complete,
-                      }"
-                      class="px-2 py-1 text-xs font-medium rounded-full"
+                      v-if="exam.examCode"
+                      class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-900 rounded-full"
                     >
-                      {{ exam.complete ? "Complete" : "Incomplete" }}
+                      {{ exam.examCode }}
                     </span>
                   </div>
-                  <p class="text-gray-600">Duration: {{ exam.duration }} min</p>
                   <p class="text-gray-600">
-                    Time: {{ formatTime(exam.start) }} -
-                    {{ formatTime(exam.end) }}
+                    Duration: {{ formatDuration(exam.duration) }}
+                  </p>
+                  <p class="text-gray-600">
+                    Time: {{ formatTimeFromString(exam.start) }} -
+                    {{ getEndTime(exam) }}
                   </p>
 
-                  <!-- Teacher info per exam -->
+                  <!-- Proctor info per exam -->
                   <div
-                    v-if="exam.bookedSegments && exam.bookedSegments.length > 0"
+                    v-if="exam.proctors && exam.proctors.length > 0"
                     class="mt-1"
                   >
+                    <p class="font-medium">Proctors:</p>
                     <div
-                      v-for="(segment, segmentIdx) in exam.bookedSegments"
-                      :key="segmentIdx"
-                      class="text-gray-600"
+                      v-for="(proctor, proctorIdx) in exam.proctors"
+                      :key="proctorIdx"
+                      class="text-gray-600 pl-2"
                     >
-                      <p>Teacher: {{ segment.teacher.name }}</p>
-                      <p>Subjects: {{ segment.teacher.subjects.join(", ") }}</p>
+                      <p>
+                        {{ proctor.teacher }} ({{ proctor.start }} -
+                        {{ proctor.end }})
+                      </p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <!-- Single exam teacher details -->
+              <!-- Single exam proctor details -->
               <div v-else>
                 <div
                   v-if="
-                    examGroup.exams[0].bookedSegments &&
-                    examGroup.exams[0].bookedSegments.length > 0
+                    examGroup.exams[0].proctors &&
+                    examGroup.exams[0].proctors.length > 0
                   "
                 >
+                  <h5 class="font-medium mb-2">Proctor Schedule:</h5>
                   <div
-                    v-for="(segment, segmentIndex) in examGroup.exams[0]
-                      .bookedSegments"
-                    :key="segmentIndex"
-                    class="mb-2"
+                    v-for="(proctor, proctorIndex) in examGroup.exams[0]
+                      .proctors"
+                    :key="proctorIndex"
+                    class="mb-2 pl-2 border-l-2 border-gray-200"
                   >
-                    <h5 class="font-medium">
-                      Teacher: {{ segment.teacher.name }}
-                    </h5>
-                    <p class="">
-                      Subjects: {{ segment.teacher.subjects.join(", ") }}
+                    <p class="font-medium">{{ proctor.teacher }}</p>
+                    <p class="text-gray-600">
+                      {{ proctor.start }} - {{ proctor.end }}
                     </p>
-                    <p class="">Availability on this day:</p>
-                    <ul class="pl-5 list-disc">
-                      <li
-                        v-for="(avail, availIndex) in filterAvailabilitiesByDow(
-                          segment.teacher.availabilities,
-                          examGroup.exams[0].dow,
-                        )"
-                        :key="availIndex"
-                      >
-                        {{ formatTime(avail.start) }} -
-                        {{ formatTime(avail.end) }}
-                      </li>
-                    </ul>
                   </div>
                 </div>
-                <div v-else class="text-gray-600">No teacher assigned yet.</div>
+                <div v-else class="text-gray-600">
+                  No proctors assigned yet.
+                </div>
               </div>
             </div>
           </div>
@@ -232,35 +214,22 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
 
-// Define interfaces based on your existing types
-interface Teacher {
-  id: string;
-  name: string;
-  availabilities: {
-    dow: number;
-    start: string | Date;
-    end: string | Date;
-  }[];
-  subjects: string[];
-  bias: number;
-}
-
-interface BookedSegment {
-  teacher: Teacher;
-  start: string | Date;
-  end: string | Date;
+// Define interfaces based on the new data structure
+interface Proctor {
+  teacher: string;
+  start: string;
+  end: string;
 }
 
 interface Exam {
   id: string;
   subject: string;
-  start: string | Date;
-  end: string | Date;
-  duration: number;
+  date: string;
+  start: string;
+  duration: string;
   room: string;
-  bookedSegments: BookedSegment[];
-  complete: boolean;
-  dow: number;
+  examCode?: string;
+  proctors: Proctor[];
 }
 
 // Props and emits
@@ -286,7 +255,8 @@ watch(
 interface ExamGroup {
   exams: Exam[];
   room: string;
-  start: string | Date;
+  date: string;
+  start: string;
   showDetails: boolean;
 }
 
@@ -298,74 +268,19 @@ interface WeekGroup {
   examGroups: ExamGroup[];
 }
 
-interface Teacher {
-  id: string;
-  name: string;
-}
-
-interface BookedSegment {
-  teacher: Teacher;
-  start: string | Date;
-  end: string | Date;
-}
-
-interface MergedSegment {
-  teacher: Teacher;
-  start: Date;
-  end: Date;
-}
-
-function mergeContiguousSegments(segments: BookedSegment[]): MergedSegment[] {
-  // Normalize dates
-  const normalized = segments.map((seg) => ({
-    ...seg,
-    start: new Date(seg.start),
-    end: new Date(seg.end),
-  }));
-
-  // Sort by teacher and start time
-  normalized.sort((a, b) => {
-    if (a.teacher.id !== b.teacher.id) {
-      return a.teacher.id.localeCompare(b.teacher.id);
-    }
-    return a.start.getTime() - b.start.getTime();
-  });
-
-  const result: MergedSegment[] = [];
-
-  for (const seg of normalized) {
-    const last = result[result.length - 1];
-
-    if (
-      last &&
-      last.teacher.id === seg.teacher.id &&
-      last.end.getTime() === seg.start.getTime()
-    ) {
-      // Extend the last segment
-      last.end = seg.end;
-    } else {
-      // Start a new segment
-      result.push({ ...seg });
-    }
-  }
-
-  return result;
-}
-
 // Group exams by room and start time
 const groupExamsByRoomAndTime = (exams: Exam[]): ExamGroup[] => {
   const groups: Record<string, ExamGroup> = {};
 
   exams.forEach((exam) => {
-    // Create a unique key for each room and start time combination
-    const startString =
-      typeof exam.start === "string" ? exam.start : exam.start.toISOString();
-    const key = `${exam.room}-${startString}`;
+    // Create a unique key for each room, date and start time combination
+    const key = `${exam.room}-${exam.date}-${exam.start}`;
 
     if (!groups[key]) {
       groups[key] = {
         exams: [],
         room: exam.room,
+        date: exam.date,
         start: exam.start,
         showDetails: false,
       };
@@ -391,7 +306,7 @@ watch(
     const weeks: Record<string, WeekGroup> = {};
 
     newExams.forEach((exam) => {
-      const examDate = new Date(exam.start);
+      const examDate = new Date(exam.date);
       const weekStart = new Date(examDate);
       weekStart.setDate(
         examDate.getDate() -
@@ -419,7 +334,7 @@ watch(
       const weekEnd = weeks[weekKey].weekEnd;
 
       const weekExams = newExams.filter((exam) => {
-        const examDate = new Date(exam.start);
+        const examDate = new Date(exam.date);
         return examDate >= weekStart && examDate <= weekEnd;
       });
 
@@ -434,9 +349,8 @@ watch(
   { immediate: true },
 );
 
-// Methods
-// Format date (Wed, May 8)
-const formatDate = (dateString: string | Date): string => {
+// Format date from string (Wed, May 8)
+const formatDateFromString = (dateString: string): string => {
   const date = new Date(dateString);
   const options: Intl.DateTimeFormatOptions = {
     weekday: "short",
@@ -446,9 +360,13 @@ const formatDate = (dateString: string | Date): string => {
   return date.toLocaleDateString("en-US", options);
 };
 
-// Format time (7:00 AM)
-const formatTime = (dateString: string | Date): string => {
-  const date = new Date(dateString);
+// Format time from string (7:00 AM)
+const formatTimeFromString = (timeString: string): string => {
+  // Handle ISO format or just time format
+  const date = timeString.includes("T")
+    ? new Date(timeString)
+    : new Date(`2000-01-01T${timeString}`);
+
   return date.toLocaleTimeString("en-US", {
     hour: "2-digit",
     minute: "2-digit",
@@ -470,45 +388,58 @@ const formatWeekLabel = (startDate: Date, endDate: Date): string => {
   }
 };
 
-// Filter availabilities by day of week
-const filterAvailabilitiesByDow = (availabilities: any[], dow: number) => {
-  return availabilities.filter((a) => a.dow === dow);
+// Format duration from string "HH:MM" to "XX min"
+const formatDuration = (duration: string): string => {
+  if (!duration) return "";
+
+  // If already in minutes format
+  if (duration.toString().indexOf(":") === -1) {
+    return `${duration} min`;
+  }
+
+  // Convert HH:MM to minutes
+  const [hours, minutes] = duration.split(":").map(Number);
+  const totalMinutes = hours * 60 + minutes;
+  return `${totalMinutes} min`;
+};
+
+// Calculate end time based on start time and duration
+const getEndTime = (exam: Exam): string => {
+  // Parse start time
+  let startDate: Date;
+
+  if (exam.start.includes("T")) {
+    // ISO format
+    startDate = new Date(exam.start);
+  } else {
+    // Time only format, use exam date
+    startDate = new Date(`${exam.date}T${exam.start}`);
+  }
+
+  // Parse duration and add to start time
+  const [hours, minutes] = exam.duration.split(":").map(Number);
+  const durationMs = (hours * 60 + minutes) * 60 * 1000;
+
+  const endDate = new Date(startDate.getTime() + durationMs);
+
+  return endDate.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 };
 
 // Toggle exam details
 const toggleExamDetails = (weekIndex: number, examIndex: number) => {
   localWeeklyExams.value[weekIndex].examGroups[examIndex].showDetails =
     !localWeeklyExams.value[weekIndex].examGroups[examIndex].showDetails;
-  console.log(
-    "Toggle show, week: ",
-    weekIndex,
-    examIndex,
-    "State: ",
-    localWeeklyExams.value[weekIndex].examGroups[examIndex].showDetails,
-  );
 };
 
-// Get border color class based on exam completion status
+// Get border color class based on exam properties
 const getBorderClass = (examGroup: ExamGroup): string => {
-  const isSingleExam = examGroup.exams.length === 1;
-  const allComplete = examGroup.exams.every((exam) => exam.complete);
-  const allIncomplete = examGroup.exams.every((exam) => !exam.complete);
-
-  if (isSingleExam) {
-    return examGroup.exams[0].complete
-      ? "border-transparent" // Single exam complete = Success
-      : "border-red-500"; // Single exam incomplete = Warning
-  }
-
-  if (allComplete) {
-    return "border-transparent"; // All exams complete = Success
-  }
-
-  if (allIncomplete) {
-    return "border-red-500"; // All exams incomplete = Warning
-  }
-
-  return "border-orange-500"; // Mixed completion = Info
+  // In the new data structure, we don't have a 'complete' field
+  // You can implement your own logic based on other fields
+  // For now, using a fixed class
+  return "border-transparent";
 };
 
 // Get combined subjects label
@@ -527,42 +458,18 @@ const getSubjectsLabel = (examGroup: ExamGroup): string => {
   return `${subjects[0]} & ${subjects.length - 1} more`;
 };
 
-// Get latest end time from all exams in a group
-const getLatestEndTime = (examGroup: ExamGroup): string => {
-  const endTimes = examGroup.exams.map((exam) => new Date(exam.end).getTime());
-  const latestTime = new Date(Math.max(...endTimes));
-  return latestTime.toISOString();
-};
-
-// Get duration range (e.g., "30-45 min" or just "30 min" if all same)
-const getDurationRange = (examGroup: ExamGroup): string => {
-  const durations = examGroup.exams.map((exam) => exam.duration);
-  const minDuration = Math.min(...durations);
-  const maxDuration = Math.max(...durations);
-
-  if (minDuration === maxDuration) {
-    return `${minDuration} min`;
-  }
-
-  return `${minDuration}-${maxDuration} min`;
-};
-
-// Get all teachers from all exams in a group
-const getAllTeachers = (examGroup: ExamGroup): Teacher[] => {
-  const teachers: Teacher[] = [];
-  const teacherIds = new Set<string>();
+// Get all proctors from all exams in a group
+const getAllProctors = (examGroup: ExamGroup): string[] => {
+  const proctorSet = new Set<string>();
 
   examGroup.exams.forEach((exam) => {
-    if (exam.bookedSegments) {
-      exam.bookedSegments.forEach((segment) => {
-        if (!teacherIds.has(segment.teacher.id)) {
-          teacherIds.add(segment.teacher.id);
-          teachers.push(segment.teacher);
-        }
+    if (exam.proctors) {
+      exam.proctors.forEach((proctor) => {
+        proctorSet.add(proctor.teacher);
       });
     }
   });
 
-  return teachers;
+  return Array.from(proctorSet);
 };
 </script>
