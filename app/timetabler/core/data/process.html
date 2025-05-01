@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CSV to Exam JSON Converter</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        line-height: 1.6;
+      }
+      .container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .dropzone {
+        border: 2px dashed #ccc;
+        padding: 30px;
+        text-align: center;
+        border-radius: 8px;
+        cursor: pointer;
+        background-color: #f9f9f9;
+        transition: background-color 0.2s;
+      }
+      .dropzone:hover {
+        background-color: #f0f0f0;
+      }
+      button {
+        padding: 10px 15px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      .hidden {
+        display: none;
+      }
+      textarea {
+        width: 100%;
+        min-height: 300px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        padding: 8px;
+        font-family: monospace;
+      }
+      .control-row {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>CSV to Exam JSON Converter</h1>
+
+      <div id="dropzone" class="dropzone">
+        <input type="file" id="fileInput" accept=".csv" class="hidden" />
+        <p>Drag & drop your CSV file here</p>
+        <p>OR</p>
+        <button id="selectFileBtn">Select File</button>
+        <p id="fileName" class="hidden"></p>
+      </div>
+
+      <div id="resultSection" class="hidden">
+        <h2>JSON Output</h2>
+        <textarea id="jsonOutput" readonly></textarea>
+        <div class="control-row">
+          <button id="copyBtn">Copy to Clipboard</button>
+          <button id="downloadBtn">Download JSON</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // DOM elements
+      const dropzone = document.getElementById('dropzone')
+      const fileInput = document.getElementById('fileInput')
+      const selectFileBtn = document.getElementById('selectFileBtn')
+      const fileNameDisplay = document.getElementById('fileName')
+      const resultSection = document.getElementById('resultSection')
+      const jsonOutput = document.getElementById('jsonOutput')
+      const copyBtn = document.getElementById('copyBtn')
+      const downloadBtn = document.getElementById('downloadBtn')
+
+      // Event listeners
+      selectFileBtn.addEventListener('click', () => fileInput.click())
+      fileInput.addEventListener('change', handleFileSelect)
+      dropzone.addEventListener('dragover', (e) => e.preventDefault())
+      dropzone.addEventListener('drop', handleFileDrop)
+      copyBtn.addEventListener('click', copyToClipboard)
+      downloadBtn.addEventListener('click', downloadJSON)
+
+      function handleFileSelect(event) {
+        const file = event.target.files[0]
+        if (file) processFile(file)
+      }
+
+      function handleFileDrop(event) {
+        event.preventDefault()
+        const file = event.dataTransfer.files[0]
+        if (file) processFile(file)
+      }
+
+      function processFile(file) {
+        if (!file.name.endsWith('.csv')) {
+          alert('Please select a CSV file')
+          return
+        }
+
+        fileNameDisplay.textContent = `Selected file: ${file.name}`
+        fileNameDisplay.classList.remove('hidden')
+
+        Papa.parse(file, {
+          header: true,
+          skipEmptyLines: true,
+          complete: (results) => {
+            const exams = parseToExamFormat(results.data)
+            displayResults(exams)
+          },
+          error: (err) => {
+            alert(`Error parsing CSV: ${err.message}`)
+          },
+        })
+      }
+
+      function parseToExamFormat(csvData) {
+        return csvData
+          .map((row, index) => {
+            if (!row.date) return null
+
+            // Parse date
+            const dateParts = row.date.split('/')
+            if (dateParts.length !== 3) return null
+            const [month, day, year] = dateParts
+
+            // Parse time from the Time field
+            let timeValue = '09:00' // Default time if parsing fails
+
+            if (row.time) {
+              // Try to extract the time portion from the Time field
+              const timeString = row.time.toLowerCase().trim()
+
+              // check for level
+              // This should be made more robust
+              const isALevel = row.examCode[0] === '1' || row.examCode[0] === '4' ? false : true
+
+              // Check for am/pm format
+              // const amMatch = timeString.match(/(\d+)(?::(\d+))?\s*am/)
+              // const pmMatch = timeString.match(/(\d+)(?::(\d+))?\s*pm/)
+
+              // if (amMatch) {
+              //   if (isALevel) {
+              //     console.log('AM IAL ')
+              //     const hours = amMatch[1].padStart(2, '0')
+              //     const minutes = (amMatch[2] || '00').padStart(2, '0')
+              //   } else {
+              //     console.log('AM GCSE ')
+              //   }
+              // } else {
+              //   if (isALevel) {
+              //     console.log('PM IAL ')
+              //   } else {
+              //     console.log('PM GCSE ')
+              //   }
+              // }
+
+              // if (amMatch) {
+              //   // AM time
+              //   const hours = amMatch[1].padStart(2, '0')
+              //   const minutes = (amMatch[2] || '00').padStart(2, '0')
+              //   timeValue = `${hours}:${minutes}`
+              // } else if (pmMatch) {
+              //   // PM time - convert to 24-hour format
+              //   let hours = parseInt(pmMatch[1])
+              //   if (hours < 12) hours += 12
+              //   const minutes = (pmMatch[2] || '00').padStart(2, '0')
+              //   timeValue = `${hours}:${minutes}`
+              // } else if (timeString.includes('morning')) {
+              //   timeValue = '09:00'
+              // } else if (timeString.includes('afternoon')) {
+              //   timeValue = '13:30'
+              // }
+            }
+
+            // Format date in ISO format
+            const isoDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${row.time}:00`
+
+            // Parse duration
+            // let formattedDuration = '01:00' // Default duration
+            // if (row.duration) {
+            //   let h = '00',
+            //     m = '00'
+            //   const durationMatch = row.duration.match(/(\d+)h\s*(\d+)m/)
+            //   if (durationMatch) {
+            //     h = durationMatch[1].padStart(2, '0')
+            //     m = durationMatch[2].padStart(2, '0')
+            //     formattedDuration = `${h}:${m}`
+            //   } else if (row.duration.match(/(\d+)h/)) {
+            //     h = row.duration.match(/(\d+)h/)[1].padStart(2, '0')
+            //     formattedDuration = `${h}:00`
+            //   } else if (row.duration.match(/(\d+)m/)) {
+            //     m = row.duration.match(/(\d+)m/)[1].padStart(2, '0')
+            //     formattedDuration = `00:${m}`
+            //   }
+            // }
+
+            // Generate a unique ID using timestamp and index
+            const uniqueId = `exam-${index}-${Date.now()}`
+
+            return {
+              id: uniqueId,
+              subject: row.subject || '',
+              start: isoDate,
+              duration: row.duration,
+              room: 'Room1',
+              examCode: row['examCode'] || '',
+            }
+          })
+          .filter((item) => item !== null)
+      }
+
+      function displayResults(exams) {
+        jsonOutput.value = JSON.stringify(exams, null, 2)
+        resultSection.classList.remove('hidden')
+      }
+
+      function copyToClipboard() {
+        jsonOutput.select()
+        document.execCommand('copy')
+        alert('JSON copied to clipboard!')
+      }
+
+      function downloadJSON() {
+        const blob = new Blob([jsonOutput.value], { type: 'application/json' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'exams.json'
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+      }
+    </script>
+  </body>
+</html>
