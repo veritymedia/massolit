@@ -4,7 +4,7 @@ import {
   type ExamRaw,
   type TeacherRaw,
 } from "./v2";
-// import { exams } from "./data/june2025";
+import { exams } from "./data/june2025";
 
 const config: Configuration = {
   parallel_teachers: 1,
@@ -20,17 +20,17 @@ const config: Configuration = {
   },
 };
 
-const exams: ExamRaw[] = [
-  {
-    date: "08/05/2025",
-    duration: "55",
-    room: "room1",
-    start: "9:00",
-    subject: "english",
-  },
-  // { date: '08/05/2025', duration: '55', room: 'room1', start: '9:00', subject: 'science' },
-  // { date: '09/05/2025', duration: '60', room: 'room1', start: '9:00', subject: 'english' },
-];
+// const exams: ExamRaw[] = [
+//   {
+//     date: "08/05/2025",
+//     duration: "55",
+//     room: "room1",
+//     start: "9:00",
+//     subject: "english",
+//   },
+//   // { date: '08/05/2025', duration: '55', room: 'room1', start: '9:00', subject: 'science' },
+//   // { date: '09/05/2025', duration: '60', room: 'room1', start: '9:00', subject: 'english' },
+// ];
 
 const teachers: TeacherRaw[] = [
   // { name: 'Teacher 1', schedule: ['0-0', '1-2', '1-1', '1-0'], subjects: ['biology'] },

@@ -52,6 +52,10 @@
 <script setup lang="ts">
 import { type TeacherRaw, Teacher, Exam, type ExamRaw } from "timetabler";
 import { processExams } from "timetabler";
+import {
+  assignTeachersToExams,
+  type Configuration,
+} from "~/timetabler/core/v2";
 const pb = usePocketbase();
 
 interface Props {
@@ -77,7 +81,7 @@ watch(
     if (curr.id !== old.id) {
       timetables.value.unshift(curr);
     }
-  }
+  },
 );
 
 async function calculateTimetable(id: string) {
@@ -91,9 +95,9 @@ async function calculateTimetable(id: string) {
       examsRaw = examsRaw.concat(list.data);
     });
 
-    const exams = examsRaw.map((exam) => {
-      return new Exam(exam);
-    });
+    // const exams = examsRaw.map((exam) => {
+    //   return new Exam(exam);
+    // });
     // console.log("TM: ", timetable.expand.exam_timetables);
     console.log("TIMETABLE: ", timetable.expand.teachers);
 
@@ -104,14 +108,33 @@ async function calculateTimetable(id: string) {
           availabilities: teacher.availabilities,
           subjects: teacher.subjects,
         });
-      }
+      },
     );
 
-    const finalTimetable = processExams(exams, teachers);
-    console.log("FINAL: ", finalTimetable);
+    // const finalTimetable = processExams(exams, teachers);
+    const config: Configuration = {
+      parallel_teachers: 1,
+      schoolTimetable: {
+        0: { start: "9:00", end: "9:54" },
+        1: { start: "9:55", end: "10:49" },
+        2: { start: "10:50", end: "11:09" },
+        3: { start: "11:10", end: "12:04" },
+        4: { start: "12:05", end: "12:59" },
+        5: { start: "13:00", end: "13:39" },
+        6: { start: "13:40", end: "14:34" },
+        7: { start: "14:35", end: "15:30" },
+      },
+    };
+
+    const finalTimetableV2 = assignTeachersToExams(
+      examsRaw,
+      timetable.expand.teachers,
+      config,
+    );
+    console.log("FINAL: ", finalTimetableV2);
 
     const saved = await pb.collection("timetables").update(id, {
-      timetable: finalTimetable,
+      timetable: finalTimetableV2,
     });
     console.log(saved);
     return navigateTo(`/timetables/${id}`);
