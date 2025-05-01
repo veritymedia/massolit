@@ -34,7 +34,7 @@ const allTeachers = ref<Teacher[]>([]);
 const selectedTeachers = ref<string[]>([]);
 const activeTeacherId = ref<string | null>(null);
 const activeTeacher = computed(
-  () => allTeachers.value.find((t) => t.id === activeTeacherId.value) ?? null
+  () => allTeachers.value.find((t) => t.id === activeTeacherId.value) ?? null,
 );
 const currentTimetable = ref<any>(null);
 
@@ -77,7 +77,7 @@ onMounted(async () => {
       teacherIds = tt.teachers;
     }
     selectedTeachers.value = teacherIds.filter((id) =>
-      allTeachers.value.some((t) => t.id === id)
+      allTeachers.value.some((t) => t.id === id),
     );
   }
 });
@@ -165,13 +165,13 @@ function groupAvailabilitiesToRanges(availSlots: string[]): AvailabilityRaw[] {
 async function saveTeacherTimetable() {
   if (!activeTeacherId.value) return;
   const teacherIdx = allTeachers.value.findIndex(
-    (t) => t.id === activeTeacherId.value
+    (t) => t.id === activeTeacherId.value,
   );
   if (teacherIdx < 0) return;
 
   // Timetable slots ("dayIdx-periodIdx")
   const timetable = Object.keys(timetableMatrix.value).filter(
-    (k) => timetableMatrix.value[k]
+    (k) => timetableMatrix.value[k],
   );
 
   // Calculate available slots, i.e. all slots not in timetable
@@ -182,7 +182,7 @@ async function saveTeacherTimetable() {
     }
   }
   const availabilities = allSlotKeys.filter(
-    (slot) => !timetableMatrix.value[slot]
+    (slot) => !timetableMatrix.value[slot],
   );
   // ---- AVAILABILITY RANGE GROUPING (the main part!) ----
 
@@ -220,6 +220,13 @@ function selectTeacherForTimetable(id: string) {
   } else {
     selectedTeachers.value.push(id);
   }
+}
+
+function selectAllTeachers() {
+  selectedTeachers.value = [];
+  allTeachers.value.forEach((t) => {
+    selectedTeachers.value.push(t.id);
+  });
 }
 
 // Save selected teachers to timetable (in timetableId param)
@@ -326,10 +333,11 @@ function removeSubject(idx: number) {
             </li>
           </ul>
         </div>
-        <div class="mt-8">
+        <div class="mt-8 flex gap-2">
           <Button variant="outline" class="w-full" @click="addNewTeacher">
             Create Teacher
           </Button>
+          <Button @click="selectAllTeachers">All</Button>
         </div>
       </Card>
       <!-- Timetable Editor -->

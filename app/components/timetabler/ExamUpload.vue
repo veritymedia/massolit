@@ -1,24 +1,6 @@
 <template>
-  <div class="">
-    <div
-      class="p-6 mb-6 text-center border-2 border-gray-400 border-dashed rounded-lg"
-      @dragover.prevent
-      @drop.prevent="handleFileDrop"
-    >
-      <input
-        type="file"
-        ref="fileInput"
-        accept=".csv"
-        class="hidden"
-        @change="handleFileSelect"
-      />
-      <Button @click="triggerFileInput"> Select CSV File </Button>
-      <p class="mt-2 text-gray-500">or drag and drop your file here</p>
-      <p v-if="fileName" class="mt-2 text-sm text-gray-700">
-        Selected file: {{ fileName }}
-      </p>
-    </div>
-
+  <div class="flex flex-col gap-5">
+    <h1>Create New Exam List</h1>
     <div class="flex flex-col gap-2">
       <div class="flex items-end gap-2 mb-5">
         <div class="flex flex-col w-auto">
@@ -43,6 +25,28 @@
         </div>
       </div>
     </div>
+
+    <h2>Upload CSV File</h2>
+    <div
+      v-if="csvData.length === 0"
+      class="p-6 mb-6 text-center border-2 border-gray-400 border-dashed rounded-lg"
+      @dragover.prevent
+      @drop.prevent="handleFileDrop"
+    >
+      <input
+        type="file"
+        ref="fileInput"
+        accept=".csv"
+        class="hidden"
+        @change="handleFileSelect"
+      />
+      <Button @click="triggerFileInput"> Select CSV File </Button>
+      <p class="mt-2 text-gray-500">or drag and drop your file here</p>
+      <p v-if="fileName" class="mt-2 text-sm text-gray-700">
+        Selected file: {{ fileName }}
+      </p>
+    </div>
+
     <div class="flex items-baseline mb-3 space-x-4">
       <Input
         v-model="searchTerm"
@@ -61,14 +65,12 @@
     </div>
     <div v-if="parsedData.length > -1" class="mb-6">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-semibold">
-          Parsed Data ({{ parsedData.length }})
-        </h3>
+        <h3 class="text-lg font-semibold">Exams ({{ parsedData.length }})</h3>
         <div class="flex items-center gap-2">
           <Button variant="secondary" @click="startAddNewRow"
             >Create New Exam</Button
           >
-          <Button @click="emitParsedContent">Save</Button>
+          <Button @click="emitParsedContent">Save Exam List</Button>
         </div>
       </div>
 
@@ -253,6 +255,11 @@ function emitParsedContent() {
     session: se,
   });
   // Optionally clear error or form fields here
+  csvData.value = [];
+  parsedData.value = [];
+  fileName.value = "";
+  error.value = "";
+  validationResults.value = [];
 }
 // Props
 const props = defineProps({
