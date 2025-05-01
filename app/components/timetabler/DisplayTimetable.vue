@@ -47,18 +47,40 @@
                 </span>
               </div>
 
-              <span
-                v-if="examGroup.exams[0].examCode"
-                class="px-2 py-1 text-xs font-medium text-blue-800 bg-blue-100 rounded-full"
-              >
-                {{ examGroup.exams[0].examCode }}
-              </span>
-              <span
-                v-else-if="examGroup.exams.length > 1"
-                class="px-2 py-1 text-xs font-medium text-blue-800 bg-blue-100 rounded-full"
-              >
-                Multiple
-              </span>
+              <div class="flex items-center gap-2">
+                <span
+                  :class="{
+                    'bg-green-100 text-green-800':
+                      getExamCoverageStatus(examGroup) === 'full',
+                    'bg-orange-100 text-orange-800':
+                      getExamCoverageStatus(examGroup) === 'partial',
+                    'bg-red-100 text-red-800':
+                      getExamCoverageStatus(examGroup) === 'none',
+                  }"
+                  class="px-2 py-1 text-xs font-medium rounded-full"
+                >
+                  {{
+                    getExamCoverageStatus(examGroup) === "full"
+                      ? "Covered"
+                      : getExamCoverageStatus(examGroup) === "partial"
+                        ? "Partial"
+                        : "Not Covered"
+                  }}
+                </span>
+                <!--
+                <span
+                  v-if="examGroup.exams[0].examCode"
+                  class="px-2 py-1 text-xs font-medium text-blue-800 bg-blue-100 rounded-full"
+                >
+                  {{ examGroup.exams[0].examCode }}
+                </span> -->
+                <span
+                  v-if="examGroup.exams.length > 1"
+                  class="px-2 py-1 text-xs font-medium text-blue-800 bg-blue-100 rounded-full"
+                >
+                  Multiple
+                </span>
+              </div>
             </div>
 
             <!-- Time and room info -->
@@ -133,22 +155,60 @@
             >
               <!-- Multiple exams info -->
               <div v-if="examGroup.exams.length > 1">
+                <div class="mb-4">
+                  <h5 class="font-medium mb-1">Group Coverage Status:</h5>
+                  <p
+                    :class="{
+                      'text-green-600':
+                        getExamCoverageStatus(examGroup) === 'full',
+                      'text-orange-600':
+                        getExamCoverageStatus(examGroup) === 'partial',
+                      'text-red-600':
+                        getExamCoverageStatus(examGroup) === 'none',
+                    }"
+                  >
+                    {{
+                      getExamCoverageStatus(examGroup) === "full"
+                        ? "✅ All exams are fully covered by proctors"
+                        : getExamCoverageStatus(examGroup) === "partial"
+                          ? "⚠️ Some exams have gaps in proctor coverage"
+                          : "❌ No exams have complete proctor coverage"
+                    }}
+                  </p>
+                </div>
+
                 <h5 class="mb-2 font-medium">Combined Exams:</h5>
                 <div
                   v-for="(exam, examIdx) in examGroup.exams"
                   :key="examIdx"
-                  class="pl-2 mb-3 border-l-2 border-gray-200"
+                  class="pl-2 mb-3 border-l-2"
+                  :class="{
+                    'border-green-300': isExamFullyCovered(exam),
+                    'border-red-300': !isExamFullyCovered(exam),
+                  }"
                 >
                   <div class="flex justify-between">
                     <span class="font-medium capitalize">{{
                       exam.subject
                     }}</span>
-                    <span
-                      v-if="exam.examCode"
-                      class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-900 rounded-full"
-                    >
-                      {{ exam.examCode }}
-                    </span>
+                    <div class="flex items-center gap-1">
+                      <span
+                        :class="{
+                          'bg-green-100 text-green-800':
+                            isExamFullyCovered(exam),
+                          'bg-red-100 text-red-800': !isExamFullyCovered(exam),
+                        }"
+                        class="px-2 py-1 text-xs font-medium rounded-full"
+                      >
+                        {{ isExamFullyCovered(exam) ? "Covered" : "Gaps" }}
+                      </span>
+                      <span
+                        v-if="exam.examCode"
+                        class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-900 rounded-full"
+                      >
+                        {{ exam.examCode }}
+                      </span>
+                    </div>
                   </div>
                   <p class="text-gray-600">
                     Duration: {{ formatDuration(exam.duration) }}
@@ -180,6 +240,29 @@
 
               <!-- Single exam proctor details -->
               <div v-else>
+                <div class="mb-4">
+                  <h5 class="font-medium mb-1">Coverage Status:</h5>
+                  <p
+                    :class="{
+                      'text-green-600': isExamFullyCovered(examGroup.exams[0]),
+                      'text-red-600': !isExamFullyCovered(examGroup.exams[0]),
+                    }"
+                  >
+                    {{
+                      isExamFullyCovered(examGroup.exams[0])
+                        ? "✅ This exam is fully covered by proctors"
+                        : "⚠️ This exam has gaps in proctor coverage"
+                    }}
+                  </p>
+                  <div
+                    v-if="!isExamFullyCovered(examGroup.exams[0])"
+                    class="text-sm text-red-500 mt-1"
+                  >
+                    Some time periods during the exam are not covered by any
+                    proctor.
+                  </div>
+                </div>
+
                 <div
                   v-if="
                     examGroup.exams[0].proctors &&
@@ -196,6 +279,14 @@
                     <p class="font-medium">{{ proctor.teacher }}</p>
                     <p class="text-gray-600">
                       {{ proctor.start }} - {{ proctor.end }}
+                    </p>
+                  </div>
+
+                  <div class="mt-3 pt-2 border-t border-gray-200">
+                    <h5 class="font-medium mb-1">Exam Time:</h5>
+                    <p class="text-gray-600">
+                      {{ formatTimeFromString(examGroup.exams[0].start) }} -
+                      {{ getEndTime(examGroup.exams[0]) }}
                     </p>
                   </div>
                 </div>
@@ -434,12 +525,108 @@ const toggleExamDetails = (weekIndex: number, examIndex: number) => {
     !localWeeklyExams.value[weekIndex].examGroups[examIndex].showDetails;
 };
 
-// Get border color class based on exam properties
+// Check if an exam is fully covered by proctors
+const isExamFullyCovered = (exam: Exam): boolean => {
+  if (!exam.proctors || exam.proctors.length === 0) {
+    return false;
+  }
+
+  // Parse exam start and end times
+  let examStartTime: Date;
+  let examEndTime: Date;
+
+  if (exam.start.includes("T")) {
+    // ISO format
+    examStartTime = new Date(exam.start);
+
+    // Calculate end time based on duration
+    const [hours, minutes] = exam.duration.split(":").map(Number);
+    const durationMs = (hours * 60 + minutes) * 60 * 1000;
+    examEndTime = new Date(examStartTime.getTime() + durationMs);
+  } else {
+    // Time only format, use exam date
+    examStartTime = new Date(`${exam.date}T${exam.start}`);
+
+    // Calculate end time based on duration
+    const [hours, minutes] = exam.duration.split(":").map(Number);
+    const durationMs = (hours * 60 + minutes) * 60 * 1000;
+    examEndTime = new Date(examStartTime.getTime() + durationMs);
+  }
+
+  // Create time ranges for proctors
+  const proctorRanges = exam.proctors.map((proctor) => {
+    let proctorStartTime: Date;
+    let proctorEndTime: Date;
+
+    // Handle different time formats
+    if (proctor.start.includes("T")) {
+      proctorStartTime = new Date(proctor.start);
+      proctorEndTime = new Date(proctor.end);
+    } else {
+      proctorStartTime = new Date(`${exam.date}T${proctor.start}:00`);
+      proctorEndTime = new Date(`${exam.date}T${proctor.end}:00`);
+    }
+
+    return { start: proctorStartTime, end: proctorEndTime };
+  });
+
+  // Check if each minute of the exam is covered
+  const examDurationMinutes = Math.ceil(
+    (examEndTime.getTime() - examStartTime.getTime()) / (60 * 1000),
+  );
+
+  for (let i = 0; i < examDurationMinutes; i++) {
+    const currentTime = new Date(examStartTime.getTime() + i * 60 * 1000);
+
+    // Check if this minute is covered by any proctor
+    const isCovered = proctorRanges.some(
+      (range) => currentTime >= range.start && currentTime < range.end,
+    );
+
+    if (!isCovered) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+// Check if all exams in a group are fully covered by proctors
+const isExamGroupFullyCovered = (examGroup: ExamGroup): boolean => {
+  return examGroup.exams.every((exam) => isExamFullyCovered(exam));
+};
+
+// Get coverage status for exam group
+const getExamCoverageStatus = (
+  examGroup: ExamGroup,
+): "full" | "partial" | "none" => {
+  const coveredExams = examGroup.exams.filter((exam) =>
+    isExamFullyCovered(exam),
+  );
+
+  if (coveredExams.length === examGroup.exams.length) {
+    return "full";
+  } else if (coveredExams.length > 0) {
+    return "partial";
+  } else {
+    return "none";
+  }
+};
+
+// Get border color class based on proctor coverage
 const getBorderClass = (examGroup: ExamGroup): string => {
-  // In the new data structure, we don't have a 'complete' field
-  // You can implement your own logic based on other fields
-  // For now, using a fixed class
-  return "border-transparent";
+  const coverageStatus = getExamCoverageStatus(examGroup);
+
+  switch (coverageStatus) {
+    case "full":
+      return "border-green-500";
+    case "partial":
+      return "border-orange-500";
+    case "none":
+      return "border-red-500";
+    default:
+      return "border-transparent";
+  }
 };
 
 // Get combined subjects label
