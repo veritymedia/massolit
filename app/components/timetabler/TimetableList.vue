@@ -25,14 +25,43 @@
         </div>
         <div v-if="t.timetable.length > 0" class="flex gap-2">
           <Button @click="navigateTo(`/timetables/${t.id}`)" class="w-full"
-            >View Timetable</Button
+            >View</Button
           >
-          <Button @click="calculateTimetable(t.id)" variant="outline"
-            ><Icon class="size-5" name="material-symbols:rotate-left-rounded"
-          /></Button>
-          <Button variant="destructive" @click="deleteTimetable(t.id)"
-            ><Icon name="material-symbols:delete-outline"
-          /></Button>
+          <DangerButton
+            @first-click="console.log('confirm_to_recalculate')"
+            @confirmed="calculateTimetable(t.id)"
+            variant="secondary"
+            :show-countdown="false"
+          >
+            <template #default-content>
+              <Icon
+                class="size-5"
+                name="material-symbols:rotate-left-rounded"
+              />
+            </template>
+            <template #confirm-content>
+              <Icon
+                class="size-5"
+                name="material-symbols:check-small-rounded"
+              />
+            </template>
+          </DangerButton>
+          <DangerButton
+            variant="destructive"
+            @first-click="console.log('confirm_to_delete')"
+            @confirmed="deleteTimetable(t.id)"
+            :show-countdown="false"
+          >
+            <template #default-content>
+              <Icon class="size-5" name="material-symbols:delete-outline" />
+            </template>
+            <template #confirm-content>
+              <Icon
+                class="size-5"
+                name="material-symbols:check-small-rounded"
+              />
+            </template>
+          </DangerButton>
         </div>
         <div class="flex w-full gap-2" v-else>
           <Button
@@ -51,7 +80,7 @@
 </template>
 <script setup lang="ts">
 import { type TeacherRaw, Teacher, Exam, type ExamRaw } from "timetabler";
-import { processExams } from "timetabler";
+import { DangerButton } from "../ui/danger-button";
 import {
   assignTeachersToExams,
   type Configuration,

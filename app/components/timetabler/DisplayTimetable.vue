@@ -39,7 +39,10 @@
             <!-- Subject(s) and exam code badge -->
             <div class="flex items-start justify-between mb-2">
               <div>
-                <h3 class="text-lg font-medium capitalize">
+                <h3
+                  @click="console.log(examGroup)"
+                  class="text-lg font-medium capitalize"
+                >
                   {{ getSubjectsLabel(examGroup) }}
                 </h3>
                 <span v-if="examGroup.exams.length > 1" class="text-xs">
@@ -155,7 +158,7 @@
             >
               <!-- Multiple exams info -->
               <div v-if="examGroup.exams.length > 1">
-                <div class="mb-4">
+                <!-- <div class="mb-4">
                   <h5 class="font-medium mb-1">Group Coverage Status:</h5>
                   <p
                     :class="{
@@ -175,7 +178,7 @@
                           : "❌ No exams have complete proctor coverage"
                     }}
                   </p>
-                </div>
+                </div> -->
 
                 <h5 class="mb-2 font-medium">Combined Exams:</h5>
                 <div
@@ -240,7 +243,7 @@
 
               <!-- Single exam proctor details -->
               <div v-else>
-                <div class="mb-4">
+                <!-- <div class="mb-4">
                   <h5 class="font-medium mb-1">Coverage Status:</h5>
                   <p
                     :class="{
@@ -261,7 +264,7 @@
                     Some time periods during the exam are not covered by any
                     proctor.
                   </div>
-                </div>
+                </div> -->
 
                 <div
                   v-if="
@@ -282,13 +285,13 @@
                     </p>
                   </div>
 
-                  <div class="mt-3 pt-2 border-t border-gray-200">
+                  <!-- <div class="mt-3 pt-2 border-t border-gray-200">
                     <h5 class="font-medium mb-1">Exam Time:</h5>
                     <p class="text-gray-600">
                       {{ formatTimeFromString(examGroup.exams[0].start) }} -
                       {{ getEndTime(examGroup.exams[0]) }}
                     </p>
-                  </div>
+                  </div> -->
                 </div>
                 <div v-else class="text-gray-600">
                   No proctors assigned yet.
