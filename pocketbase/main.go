@@ -33,6 +33,19 @@ type ConfigRecord struct {
 //go:embed all:.output/public
 var public embed.FS
 
+// getDetentionSchedule reads the DETENTION_EMAIL_SCHEDULE environment variable
+// and returns it if set, otherwise returns the default schedule
+func getDetentionSchedule() string {
+	const defaultSchedule = "0 12 * * 1-5" // 12:00 PM Monday-Friday
+
+	schedule := os.Getenv("DETENTION_EMAIL_SCHEDULE")
+	if schedule == "" {
+		return defaultSchedule
+	}
+
+	return schedule
+}
+
 func main() {
 	app := pocketbase.New()
 
@@ -59,13 +72,40 @@ func main() {
 
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		scheduler := cron.New()
+		const defaultSchedule = "0 12 * * 1-5"
 
-		err := scheduler.Add("sendDetentionReport", "0 12 * * 1-5", func() {
+		// Get detention email schedule from environment variable with fallback to default
+		detentionSchedule := getDetentionSchedule()
+		
+		// Log which schedule is being attempted
+		if detentionSchedule == defaultSchedule {
+			fmt.Printf("Using default detention email schedule: %s\n", defaultSchedule)
+		} else {
+			fmt.Printf("Using custom detention email schedule from environment: %s\n", detentionSchedule)
+		}
+
+		// Attempt to add the cron job with the provided schedule
+		err := scheduler.Add("sendDetentionReport", detentionSchedule, func() {
 			_ = tasks.HandleDetentionReportSend(app)
 		})
+		
+		// If the cron expression is invalid, log error and fallback to default
 		if err != nil {
-			return fmt.Errorf("failed to add detention report cron job: %v", err)
+			fmt.Printf("ERROR: Invalid cron expression '%s': %v\n", detentionSchedule, err)
+			fmt.Printf("Falling back to default detention email schedule: %s\n", defaultSchedule)
+			
+			// Attempt to add with default schedule
+			err = scheduler.Add("sendDetentionReport", defaultSchedule, func() {
+				_ = tasks.HandleDetentionReportSend(app)
+			})
+			if err != nil {
+				return fmt.Errorf("failed to add detention report cron job with default schedule: %v", err)
+			}
+			fmt.Printf("Successfully configured detention email with fallback schedule: %s\n", defaultSchedule)
+		} else {
+			fmt.Printf("Successfully configured detention email schedule: %s\n", detentionSchedule)
 		}
+		
 		scheduler.Start()
 		return nil
 	})
@@ -94,9 +134,30 @@ func main() {
 				if err != nil {
 					log.Printf("Error fetching behavior notes: %v", err)
 				} else {
+					fmt.Printf("CRON::BEHAVIOUR_NOTES Fetched %d behavior notes\n", len(resp.BehaviorNotes))
 
 					if err := tasks.SaveBehaviorNotes(app, resp.BehaviorNotes); err != nil {
 						log.Printf("Error saving behavior notes: %v", err)
+					}
+
+					// After saving behavior notes, check for new detentions in rolling 7-day window
+					detentionNotes, err := tasks.GetDetentionNotes(app)
+					if err != nil {
+						log.Printf("Error checking detention notes: %v", err)
+					} else if len(detentionNotes) > 0 {
+						fmt.Printf("CRON::BEHAVIOUR_NOTES Found %d pending detentions in 7-day window\n", len(detentionNotes))
+					}
+
+					// Check for double detentions (students with multiple detentions in 7-day window)
+					doubleDetentions, err := tasks.CheckDoubleDetentions(app)
+					if err != nil {
+						log.Printf("Error checking double detentions: %v", err)
+					} else if len(doubleDetentions) > 0 {
+						fmt.Printf("CRON::BEHAVIOUR_NOTES ALERT: Found %d students with multiple detentions in 7-day window\n", len(doubleDetentions))
+						for _, student := range doubleDetentions {
+							fmt.Printf("  - DOUBLE DETENTION: %s %s (%s) has %d detentions\n", 
+								student.FirstName, student.LastName, student.Grade, student.DetentionCount)
+						}
 					}
 
 					updatedSinceRecord := modifiedSinceRecord[0]
