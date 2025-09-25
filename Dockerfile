@@ -21,9 +21,6 @@ COPY . .
 # This will generate the Nuxt app, copy it to pocketbase dir, and build the Go binary
 RUN pnpm run build:prod
 
-# Rename the binary to massolit
-RUN mv pocketnuxt massolit
-
 # Stage 3: Create the final minimal image
 FROM alpine:3.18
 
