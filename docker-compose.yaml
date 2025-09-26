@@ -1,8 +1,6 @@
 services:
   massolit:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/veritymedia/massolit:latest
     volumes:
       - massolit_data:/app/pb_data
     environment:
