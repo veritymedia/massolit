@@ -6,6 +6,6 @@ services:
     environment:
       MANAGEBAC_API: ${MANAGEBAC_API}
     ports:
-      - 8090:8090
+      - 8091:8090
 volumes:
   massolit_data:
