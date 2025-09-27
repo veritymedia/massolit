@@ -7,5 +7,10 @@ services:
       MANAGEBAC_API: ${MANAGEBAC_API}
     ports:
       - 8091:8090
+    networks:
+      - dokploy-network
 volumes:
   massolit_data:
+
+networks:
+  dokloy-network:
