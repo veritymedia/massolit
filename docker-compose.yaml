@@ -5,8 +5,6 @@ services:
       - massolit_data:/app/pb_data
     environment:
       MANAGEBAC_API: ${MANAGEBAC_API}
-    ports:
-      - 8091:8090
     networks:
       - dokploy-network
 volumes:
