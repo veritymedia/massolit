@@ -80,7 +80,7 @@ func GetDetentionNotes(app *pocketbase.PocketBase) ([]DetentionNote, error) {
 	for _, record := range results {
 		note := DetentionNote{
 			BehaviorNote: BehaviorNote{
-				ID:                record.GetInt("id"),
+				ID:                0, // Not using ManageBac ID for grouping, use PocketBase record ID
 				StudentID:         record.GetString("student_id"),
 				FirstName:         record.GetString("first_name"),
 				LastName:          record.GetString("last_name"),
@@ -91,11 +91,11 @@ func GetDetentionNotes(app *pocketbase.PocketBase) ([]DetentionNote, error) {
 				Notes:             record.GetString("notes"),
 				NextStep:          record.GetString("next_step"),
 				NextStepDate:      record.GetString("next_step_date"),
-				AuthorID:          record.GetInt("author_id"),
+				AuthorID:          record.GetString("author_id"), // author_id is text field in schema
 				ReportedBy:        record.GetString("reported_by"),
 				HomeRoomAdvisor:   record.GetString("homeroom_advisor"),
-				VisibleToParents:  record.GetBool("visible_to_parents"),
-				VisibleToStudents: record.GetBool("visible_to_students"),
+				VisibleToParents:  record.GetString("visible_to_parents"), // visible_to_parents is text field in schema
+				VisibleToStudents: record.GetString("visible_to_students"), // visible_to_students is text field in schema
 				CreatedAt:         record.GetString("created_at"),
 				UpdatedAt:         record.GetString("updated_at"),
 				ActionComplete:    record.GetBool("action_complete"),
@@ -130,7 +130,7 @@ func GetAllDetentionNotesInWindow(app *pocketbase.PocketBase) ([]DetentionNote, 
 	for _, record := range results {
 		note := DetentionNote{
 			BehaviorNote: BehaviorNote{
-				ID:                record.GetInt("id"),
+				ID:                0, // Not using ManageBac ID for grouping, use PocketBase record ID
 				StudentID:         record.GetString("student_id"),
 				FirstName:         record.GetString("first_name"),
 				LastName:          record.GetString("last_name"),
@@ -141,11 +141,11 @@ func GetAllDetentionNotesInWindow(app *pocketbase.PocketBase) ([]DetentionNote, 
 				Notes:             record.GetString("notes"),
 				NextStep:          record.GetString("next_step"),
 				NextStepDate:      record.GetString("next_step_date"),
-				AuthorID:          record.GetInt("author_id"),
+				AuthorID:          record.GetString("author_id"), // author_id is text field in schema
 				ReportedBy:        record.GetString("reported_by"),
 				HomeRoomAdvisor:   record.GetString("homeroom_advisor"),
-				VisibleToParents:  record.GetBool("visible_to_parents"),
-				VisibleToStudents: record.GetBool("visible_to_students"),
+				VisibleToParents:  record.GetString("visible_to_parents"), // visible_to_parents is text field in schema
+				VisibleToStudents: record.GetString("visible_to_students"), // visible_to_students is text field in schema
 				CreatedAt:         record.GetString("created_at"),
 				UpdatedAt:         record.GetString("updated_at"),
 				ActionComplete:    record.GetBool("action_complete"),
@@ -207,6 +207,7 @@ func CheckDoubleDetentions(app *pocketbase.PocketBase) ([]StudentDetentionSummar
 
 	return doubleDetentions, nil
 }
+
 func PrettyFormatDate(dateStr string) string {
 	parsedTime, err := time.Parse(time.RFC3339Nano, dateStr)
 	if err != nil {

@@ -25,11 +25,11 @@ type BehaviorNote struct {
 	Notes             string `json:"notes"`
 	NextStep          string `json:"next_step"`
 	NextStepDate      string `json:"next_step_date"`
-	AuthorID          int    `json:"author_id"`
+	AuthorID          int    `json:"author_id"` // Keep as int for ManageBac API
 	ReportedBy        string `json:"reported_by"`
 	HomeRoomAdvisor   string `json:"homeroom_advisor"`
-	VisibleToParents  bool   `json:"visible_to_parents"`
-	VisibleToStudents bool   `json:"visible_to_students"`
+	VisibleToParents  bool   `json:"visible_to_parents"` // Keep as bool for ManageBac API
+	VisibleToStudents bool   `json:"visible_to_students"` // Keep as bool for ManageBac API
 	CreatedAt         string `json:"created_at"`
 	UpdatedAt         string `json:"updated_at"`
 	ActionComplete    bool   `json:"action_complete"`
@@ -103,16 +103,29 @@ func SaveBehaviorNotes(app *pocketbase.PocketBase, notes []BehaviorNote) error {
 	}
 
 	for _, note := range notes {
-		// Check if note already exists
-		existingNote, err := app.Dao().FindRecordById(
+		// Check if note already exists by ManageBac ID stored in a custom field
+		// Since we don't have managebac_id field, we'll check by a combination of fields
+		existingRecords, err := app.Dao().FindRecordsByFilter(
 			collection.Name,
-			fmt.Sprintf("id = '%d'", note.ID),
+			fmt.Sprintf("student_id = '%s' && incident_time = '%s' && notes = '%s'", 
+				note.StudentID, note.IncidentTime, note.Notes),
+			"",
+			1,
+			0,
 		)
+		
+		var existingNote *models.Record
+		if err == nil && len(existingRecords) > 0 {
+			existingNote = existingRecords[0]
+			err = nil
+		} else {
+			err = fmt.Errorf("record not found")
+		}
 
 		if err != nil {
 			// Create new record if not exists
 			record := models.NewRecord(collection)
-			record.Set("id", fmt.Sprintf("%d", note.ID))
+			// Don't set managebac_id since it doesn't exist in schema
 			record.Set("student_id", note.StudentID)
 			record.Set("first_name", note.FirstName)
 			record.Set("last_name", note.LastName)
@@ -123,11 +136,12 @@ func SaveBehaviorNotes(app *pocketbase.PocketBase, notes []BehaviorNote) error {
 			record.Set("notes", note.Notes)
 			record.Set("next_step", note.NextStep)
 			record.Set("next_step_date", note.NextStepDate)
-			record.Set("author_id", note.AuthorID)
+			// Convert ManageBac data types to match database schema
+			record.Set("author_id", fmt.Sprintf("%d", note.AuthorID)) // Convert int to string
 			record.Set("reported_by", note.ReportedBy)
 			record.Set("homeroom_advisor", note.HomeRoomAdvisor)
-			record.Set("visible_to_parents", note.VisibleToParents)
-			record.Set("visible_to_students", note.VisibleToStudents)
+			record.Set("visible_to_parents", fmt.Sprintf("%t", note.VisibleToParents)) // Convert bool to string
+			record.Set("visible_to_students", fmt.Sprintf("%t", note.VisibleToStudents)) // Convert bool to string
 			record.Set("created_at", note.CreatedAt)
 			record.Set("updated_at", note.UpdatedAt)
 
