@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/mail"
+	"strconv"
 	"time"
 
 	"github.com/pocketbase/pocketbase"
@@ -78,6 +79,14 @@ func GetDetentionNotes(app *pocketbase.PocketBase) ([]DetentionNote, error) {
 
 	var detentionNotes []DetentionNote
 	for _, record := range results {
+		// Convert author_id from string to int
+		authorID := 0
+		if authorIDStr := record.GetString("author_id"); authorIDStr != "" {
+			if id, err := strconv.Atoi(authorIDStr); err == nil {
+				authorID = id
+			}
+		}
+
 		note := DetentionNote{
 			BehaviorNote: BehaviorNote{
 				ID:                0, // Not using ManageBac ID for grouping, use PocketBase record ID
@@ -91,11 +100,11 @@ func GetDetentionNotes(app *pocketbase.PocketBase) ([]DetentionNote, error) {
 				Notes:             record.GetString("notes"),
 				NextStep:          record.GetString("next_step"),
 				NextStepDate:      record.GetString("next_step_date"),
-				AuthorID:          record.GetString("author_id"), // author_id is text field in schema
+				AuthorID:          authorID,
 				ReportedBy:        record.GetString("reported_by"),
 				HomeRoomAdvisor:   record.GetString("homeroom_advisor"),
-				VisibleToParents:  record.GetString("visible_to_parents"), // visible_to_parents is text field in schema
-				VisibleToStudents: record.GetString("visible_to_students"), // visible_to_students is text field in schema
+				VisibleToParents:  record.GetString("visible_to_parents") == "true",
+				VisibleToStudents: record.GetString("visible_to_students") == "true",
 				CreatedAt:         record.GetString("created_at"),
 				UpdatedAt:         record.GetString("updated_at"),
 				ActionComplete:    record.GetBool("action_complete"),
@@ -128,6 +137,14 @@ func GetAllDetentionNotesInWindow(app *pocketbase.PocketBase) ([]DetentionNote, 
 
 	var detentionNotes []DetentionNote
 	for _, record := range results {
+		// Convert author_id from string to int
+		authorID := 0
+		if authorIDStr := record.GetString("author_id"); authorIDStr != "" {
+			if id, err := strconv.Atoi(authorIDStr); err == nil {
+				authorID = id
+			}
+		}
+
 		note := DetentionNote{
 			BehaviorNote: BehaviorNote{
 				ID:                0, // Not using ManageBac ID for grouping, use PocketBase record ID
@@ -141,11 +158,11 @@ func GetAllDetentionNotesInWindow(app *pocketbase.PocketBase) ([]DetentionNote, 
 				Notes:             record.GetString("notes"),
 				NextStep:          record.GetString("next_step"),
 				NextStepDate:      record.GetString("next_step_date"),
-				AuthorID:          record.GetString("author_id"), // author_id is text field in schema
+				AuthorID:          authorID,
 				ReportedBy:        record.GetString("reported_by"),
 				HomeRoomAdvisor:   record.GetString("homeroom_advisor"),
-				VisibleToParents:  record.GetString("visible_to_parents"), // visible_to_parents is text field in schema
-				VisibleToStudents: record.GetString("visible_to_students"), // visible_to_students is text field in schema
+				VisibleToParents:  record.GetString("visible_to_parents") == "true",
+				VisibleToStudents: record.GetString("visible_to_students") == "true",
 				CreatedAt:         record.GetString("created_at"),
 				UpdatedAt:         record.GetString("updated_at"),
 				ActionComplete:    record.GetBool("action_complete"),
